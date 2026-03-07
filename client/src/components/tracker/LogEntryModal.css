@@ -1,0 +1,74 @@
+.log-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.log-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.log-field label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.log-boolean-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.bool-btn {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.bool-btn.active {
+  border-color: var(--accent-lime);
+  background: rgba(200, 241, 53, 0.12);
+  color: var(--accent-lime);
+}
+
+.bool-btn.skip.active {
+  border-color: var(--accent-coral);
+  background: rgba(255, 107, 74, 0.12);
+  color: var(--accent-coral);
+}
+
+.scale-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.scale-btn {
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.scale-btn.active {
+  border-color: var(--accent-blue);
+  background: rgba(74, 240, 228, 0.15);
+  color: var(--accent-blue);
+}

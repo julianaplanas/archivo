@@ -1,0 +1,138 @@
+.craft-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: card-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.craft-card.completed {
+  border-color: color-mix(in srgb, var(--accent-lime) 25%, var(--border));
+}
+
+.craft-card-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.craft-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.craft-card-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.craft-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.craft-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.craft-card-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.craft-action-btn {
+  font-size: 14px;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 3px 5px;
+  border-radius: 4px;
+  transition: color 0.1s;
+  font-family: var(--font-mono);
+}
+
+.craft-action-btn:hover { color: var(--text); }
+.craft-action-btn.danger:hover { color: var(--accent-coral); }
+
+.craft-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.craft-tag {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+  /* sticker-like slight rotation alternation handled in JS if needed */
+}
+
+.craft-tag:nth-child(odd) {
+  transform: rotate(-0.5deg);
+}
+.craft-tag:nth-child(even) {
+  transform: rotate(0.5deg);
+}
+
+.craft-description {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.craft-source-link {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--accent-blue);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.craft-footer {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.craft-complete-btn {
+  font-size: 12px !important;
+  padding: 8px 16px !important;
+}
+
+.craft-completed-label {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--accent-lime);
+  letter-spacing: 0.04em;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

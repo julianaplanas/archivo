@@ -1,0 +1,141 @@
+.tracker-card {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  animation: card-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.tracker-card:active {
+  transform: scale(0.98);
+}
+
+.tracker-card-accent {
+  width: 4px;
+  align-self: stretch;
+  background: var(--card-accent, var(--accent-blue));
+  flex-shrink: 0;
+}
+
+.tracker-card-main {
+  flex: 1;
+  padding: 14px 12px;
+  min-width: 0;
+}
+
+.tracker-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tracker-emoji {
+  font-size: 22px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tracker-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.tracker-name {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+
+.tracker-mode-badge {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.tracker-goal {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  letter-spacing: 0.03em;
+}
+
+.tracker-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px 12px 8px;
+  flex-shrink: 0;
+}
+
+.streak-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.streak-num {
+  font-size: 28px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text);
+  line-height: 1;
+}
+
+.streak-unit {
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.quick-log-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.quick-log-btn.logged {
+  background: var(--card-accent, var(--accent-lime));
+  border-color: var(--card-accent, var(--accent-lime));
+  color: #0d0d0d;
+}
+
+.quick-log-btn:not(.logged):active {
+  background: var(--card-accent, var(--accent-lime));
+  border-color: var(--card-accent, var(--accent-lime));
+  color: #0d0d0d;
+  transform: scale(0.9);
+}
+
+.tracker-card.logged {
+  border-color: color-mix(in srgb, var(--card-accent, var(--accent-lime)) 30%, var(--border));
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}

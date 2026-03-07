@@ -1,0 +1,76 @@
+.crafts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px 0;
+  flex-shrink: 0;
+}
+
+.crafts-title {
+  font-size: 36px;
+  letter-spacing: -0.03em;
+}
+
+.crafts-tabs {
+  display: flex;
+  gap: 0;
+  padding: 12px 16px 0;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.craft-tab {
+  flex: 1;
+  padding: 10px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+
+.craft-tab.active {
+  color: var(--accent-lime);
+  border-bottom-color: var(--accent-lime);
+}
+
+.crafts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.crafts-loading {
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 40px 0;
+  text-align: center;
+}
+
+.crafts-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.crafts-empty-art {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.crafts-empty-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}

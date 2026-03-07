@@ -1,0 +1,157 @@
+.heatmap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Month labels row */
+.heatmap-top {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.hm-day-spacer {
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.hm-month-row {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+}
+
+.hm-month-slot {
+  width: 20px;
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: visible;
+  flex-shrink: 0;
+}
+
+/* Grid body */
+.heatmap-body {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.hm-day-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.hm-day-label {
+  width: 14px;
+  height: 20px;
+  font-size: 9px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 2px;
+}
+
+.hm-cols {
+  display: flex;
+  gap: 3px;
+}
+
+.hm-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hm-cell {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: transform 0.1s, opacity 0.1s;
+  cursor: default;
+}
+
+.hm-cell.has-entry {
+  cursor: pointer;
+}
+
+.hm-cell.has-entry:hover,
+.hm-cell.today {
+  transform: scale(1.15);
+}
+
+.hm-cell.future {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Tooltip */
+.hm-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+  animation: fade-in 0.15s ease;
+}
+
+.hm-tooltip-date {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.hm-tooltip-empty {
+  color: var(--text-muted);
+}
+
+.hm-tooltip-val {
+  color: var(--text);
+}
+
+.hm-tooltip-note {
+  color: var(--text-muted);
+}
+
+/* Legend */
+.hm-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.hm-legend .hm-cell {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  cursor: default;
+}
+
+.hm-legend .hm-cell:hover {
+  transform: none;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -1,0 +1,136 @@
+const Database = require('better-sqlite3');
+const path = require('path');
+const fs = require('fs');
+
+const DATA_PATH = process.env.DATA_PATH || path.join(__dirname, '..', 'data');
+const DB_PATH = path.join(DATA_PATH, 'archivo.db');
+const UPLOADS_PATH = path.join(DATA_PATH, 'uploads');
+
+// Ensure directories exist
+fs.mkdirSync(DATA_PATH, { recursive: true });
+fs.mkdirSync(UPLOADS_PATH, { recursive: true });
+
+const db = new Database(DB_PATH);
+
+// Enable WAL mode for better performance
+db.pragma('journal_mode = WAL');
+db.pragma('foreign_keys = ON');
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS trackers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    emoji TEXT NOT NULL DEFAULT '📌',
+    type TEXT NOT NULL CHECK(type IN ('boolean', 'quantity', 'scale', 'text')),
+    mode TEXT NOT NULL CHECK(mode IN ('quit', 'do_it', 'track_only')),
+    goal_value REAL,
+    goal_unit TEXT,
+    notifications_enabled INTEGER NOT NULL DEFAULT 0,
+    notification_time TEXT,
+    color TEXT NOT NULL DEFAULT '#4af0e4',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS tracker_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tracker_id INTEGER NOT NULL REFERENCES trackers(id) ON DELETE CASCADE,
+    value TEXT,
+    notes TEXT,
+    logged_at TEXT NOT NULL DEFAULT (datetime('now')),
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS crafts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'wishlist' CHECK(status IN ('wishlist', 'in_progress', 'completed')),
+    description TEXT,
+    source_url TEXT,
+    og_title TEXT,
+    og_image TEXT,
+    completed_at TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS craft_images (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    craft_id INTEGER NOT NULL REFERENCES crafts(id) ON DELETE CASCADE,
+    filepath TEXT NOT NULL,
+    caption TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS craft_tags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    craft_id INTEGER NOT NULL REFERENCES crafts(id) ON DELETE CASCADE,
+    tag TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS materials (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    quantity REAL NOT NULL DEFAULT 0,
+    unit TEXT,
+    category TEXT,
+    notes TEXT,
+    need_to_buy INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS craft_materials (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    craft_id INTEGER NOT NULL REFERENCES crafts(id) ON DELETE CASCADE,
+    material_id INTEGER NOT NULL REFERENCES materials(id) ON DELETE CASCADE,
+    quantity_needed REAL,
+    unit TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS contacts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    birthday TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS contact_craft_links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contact_id INTEGER NOT NULL REFERENCES contacts(id) ON DELETE CASCADE,
+    craft_id INTEGER NOT NULL REFERENCES crafts(id) ON DELETE CASCADE,
+    occasion TEXT,
+    notes TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    endpoint TEXT UNIQUE NOT NULL,
+    p256dh TEXT NOT NULL,
+    auth TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`);
+
+// Seed sample trackers if none exist
+const trackerCount = db.prepare('SELECT COUNT(*) as count FROM trackers').get();
+if (trackerCount.count === 0) {
+  const insertTracker = db.prepare(`
+    INSERT INTO trackers (name, emoji, type, mode, color)
+    VALUES (@name, @emoji, @type, @mode, @color)
+  `);
+  const seedTrackers = db.transaction(() => {
+    insertTracker.run({ name: 'Gym', emoji: '💪', type: 'boolean', mode: 'do_it', color: '#c8f135' });
+    insertTracker.run({ name: 'Sugar', emoji: '🍬', type: 'boolean', mode: 'quit', color: '#ff6b4a' });
+    insertTracker.run({ name: 'Daily Meds', emoji: '💊', type: 'boolean', mode: 'do_it', color: '#4af0e4' });
+  });
+  seedTrackers();
+  console.log('[db] Seeded sample trackers');
+}
+
+module.exports = { db, UPLOADS_PATH, DATA_PATH };

@@ -1,0 +1,231 @@
+.dash-date {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  margin-top: 8px;
+}
+
+.dash-greeting {
+  font-size: 38px;
+  letter-spacing: -0.03em;
+  margin-bottom: 28px;
+  line-height: 1.1;
+}
+
+.dash-section {
+  margin-bottom: 28px;
+}
+
+/* ─── Quick-log strip ─── */
+
+.qlc-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.qlc-strip::-webkit-scrollbar { display: none; }
+
+.qlc-skeleton {
+  width: 90px;
+  height: 90px;
+  border-radius: 14px;
+  background: var(--surface);
+  flex-shrink: 0;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+/* ─── Today at a glance chips ─── */
+
+.glance-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.glance-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.glance-chip.logged {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+}
+
+.glance-chip-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.glance-chip-streak {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.glance-chip.logged .glance-chip-streak {
+  color: var(--accent);
+}
+
+.glance-chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.glance-chip.logged .glance-chip-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ─── Mini stat ─── */
+
+.mini-stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: var(--radius);
+  margin-bottom: 28px;
+  animation: fade-slide-in 0.4s ease both;
+}
+
+.mini-stat-emoji {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.mini-stat-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+/* ─── Birthdays ─── */
+
+.birthday-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.birthday-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  gap: 12px;
+}
+
+.birthday-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.birthday-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.birthday-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.birthday-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.birthday-countdown {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.birthday-countdown.today {
+  color: var(--accent-coral);
+  font-weight: 600;
+}
+
+.birthday-countdown.soon {
+  color: var(--accent-lime);
+}
+
+.craft-ideas-btn {
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  color: var(--accent-blue);
+  border-color: rgba(74, 240, 228, 0.3);
+}
+
+/* ─── Empty state ─── */
+
+.dash-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+
+.dash-empty:hover {
+  border-color: var(--accent-lime);
+  color: var(--accent-lime);
+}
+
+.dash-empty-art {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  letter-spacing: 0.1em;
+}
+
+@keyframes fade-slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
