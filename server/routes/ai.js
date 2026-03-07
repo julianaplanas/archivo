@@ -3,19 +3,25 @@ const router = express.Router();
 const OpenAI = require('openai');
 const { db } = require('../db');
 
-const client = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
-  defaultHeaders: {
-    'HTTP-Referer': 'https://archivo.app',
-    'X-Title': 'Archivo',
-  },
-});
-
 const MODEL = process.env.OPENROUTER_MODEL || 'anthropic/claude-sonnet-4-5';
+
+function getClient() {
+  if (!process.env.OPENROUTER_API_KEY) {
+    throw new Error('OPENROUTER_API_KEY is not set');
+  }
+  return new OpenAI({
+    baseURL: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPENROUTER_API_KEY,
+    defaultHeaders: {
+      'HTTP-Referer': 'https://archivo.app',
+      'X-Title': 'Archivo',
+    },
+  });
+}
 
 // POST /api/ai/correlation-insight
 router.post('/correlation-insight', async (req, res) => {
+  try {
   const { trackerIds, days = 60 } = req.body;
   if (!trackerIds?.length) return res.status(400).json({ error: 'trackerIds required' });
 
@@ -36,7 +42,7 @@ router.post('/correlation-insight', async (req, res) => {
     `).all(t.id),
   }));
 
-  const response = await client.chat.completions.create({
+  const response = await getClient().chat.completions.create({
     model: MODEL,
     max_tokens: 300,
     messages: [
@@ -52,10 +58,14 @@ router.post('/correlation-insight', async (req, res) => {
   });
 
   res.json({ insight: response.choices[0].message.content });
+  } catch (err) {
+    res.status(503).json({ error: err.message });
+  }
 });
 
 // POST /api/ai/craft-suggestions
 router.post('/craft-suggestions', async (req, res) => {
+  try {
   const { contactId, occasion } = req.body;
   if (!contactId) return res.status(400).json({ error: 'contactId required' });
 
@@ -67,7 +77,7 @@ router.post('/craft-suggestions', async (req, res) => {
     ? Math.ceil((new Date(contact.birthday) - new Date()) / (1000 * 60 * 60 * 24))
     : null;
 
-  const response = await client.chat.completions.create({
+  const response = await getClient().chat.completions.create({
     model: MODEL,
     max_tokens: 1000,
     messages: [
@@ -82,12 +92,15 @@ router.post('/craft-suggestions', async (req, res) => {
     ],
   });
 
-  try {
-    const text = response.choices[0].message.content;
-    const json = JSON.parse(text.match(/\[[\s\S]*\]/)[0]);
-    res.json({ suggestions: json });
-  } catch {
-    res.json({ suggestions: [], raw: response.choices[0].message.content });
+    try {
+      const text = response.choices[0].message.content;
+      const json = JSON.parse(text.match(/\[[\s\S]*\]/)[0]);
+      res.json({ suggestions: json });
+    } catch {
+      res.json({ suggestions: [], raw: response.choices[0].message.content });
+    }
+  } catch (err) {
+    res.status(503).json({ error: err.message });
   }
 });
 

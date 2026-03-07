@@ -19,9 +19,7 @@ const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Init DB (creates tables + seeds on first run)
-console.log('[archivo] initializing db...');
 const { db, UPLOADS_PATH, DATA_PATH } = require('./db');
-console.log('[archivo] db ready');
 
 // Middleware
 app.use(cors());
