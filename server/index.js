@@ -2,6 +2,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') }
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const cors = require('cors');
 
 const app = express();
@@ -41,12 +42,16 @@ app.use('/api/push', requireAuth, require('./routes/push'));
 app.use('/api/ai', requireAuth, require('./routes/ai'));
 app.use('/api/og', requireAuth, require('./routes/og'));
 
-// Serve React frontend in production
-if (NODE_ENV === 'production') {
-  const clientDist = path.join(__dirname, '..', 'client', 'dist');
+// Serve React frontend whenever client/dist exists
+const clientDist = path.join(__dirname, '..', 'client', 'dist');
+if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist));
   app.get('*', (req, res) => {
     res.sendFile(path.join(clientDist, 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.send('archivo API is running — client/dist not found, run `npm run build` first.');
   });
 }
 
