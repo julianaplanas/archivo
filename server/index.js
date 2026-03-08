@@ -64,6 +64,9 @@ if (fs.existsSync(clientDist)) {
   });
 }
 
+// Start push notification cron job
+require('./jobs/notifications');
+
 app.listen(PORT, () => {
   console.log(`[archivo] server running on port ${PORT}`);
   console.log(`[archivo] env: ${NODE_ENV}`);

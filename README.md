@@ -158,7 +158,6 @@ In your Railway service → **Variables**, add:
 | Variable | Value |
 |---|---|
 | `NODE_ENV` | `production` |
-| `PORT` | `3000` |
 | `DATA_PATH` | `/data` |
 | `JWT_SECRET` | Run `openssl rand -base64 32` locally and paste the result |
 | `OPENROUTER_API_KEY` | Your key from [openrouter.ai/keys](https://openrouter.ai/keys) |
@@ -186,17 +185,15 @@ Push to your connected branch and Railway will deploy automatically.
 
 ### 5. Create your user on Railway
 
-Once deployed, open the Railway service shell (or use the CLI):
+> ⚠️ **Important:** `railway run` executes commands **locally on your machine**, not inside the Railway container. The user would be created in a local database, not the production one. Use the Railway dashboard shell instead.
+
+In your Railway dashboard → select your service → click **"Shell"** (or the terminal icon). Then run:
 
 ```bash
-railway run node scripts/create-user.js yourname yourpassword
+node scripts/create-user.js yourname yourpassword
 ```
 
-Or if using the Railway CLI locally:
-
-```bash
-railway run --service your-service-name node scripts/create-user.js yourname yourpassword
-```
+This runs inside the container with access to the production volume at `/data/archivo.db`.
 
 ### 6. Get your app URL
 

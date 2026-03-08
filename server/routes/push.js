@@ -15,6 +15,11 @@ function initWebPush() {
   return false;
 }
 
+// GET /api/push/vapid-key
+router.get('/vapid-key', (req, res) => {
+  res.json({ publicKey: process.env.VAPID_PUBLIC_KEY || null });
+});
+
 // POST /api/push/subscribe
 router.post('/subscribe', (req, res) => {
   const { endpoint, keys } = req.body;

@@ -1,0 +1,13 @@
+2026-03-07T11:02:17.950427827Z [inf]  Mounting volume on: /var/lib/containers/railwayapp/bind-mounts/1a99f678-33c1-4096-8501-de461a61cd85/vol_3fft017pphzvkaik
+2026-03-07T11:02:17.950521808Z [inf]  Starting Container
+2026-03-07T11:02:18.361675277Z [err]  npm warn config production Use `--omit=dev` instead.
+2026-03-07T11:02:18.361682040Z [inf]  
+2026-03-07T11:02:18.361687562Z [inf]  > archivo@1.0.0 start
+2026-03-07T11:02:18.361693568Z [inf]  > node server/index.js
+2026-03-07T11:02:18.361700312Z [inf]  
+2026-03-07T11:02:18.361707852Z [inf]  [dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+2026-03-07T11:02:18.361714461Z [inf]  [db] Seeded sample trackers
+2026-03-07T11:02:18.361720873Z [inf]  [archivo] server running on port 3000
+2026-03-07T11:02:18.361726347Z [inf]  [archivo] env: production
+2026-03-07T11:02:18.361731501Z [inf]  [archivo] data path: /data
+2026-03-07T11:02:18.361737002Z [inf]  [archivo] db: /data/archivo.db
