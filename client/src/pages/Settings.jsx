@@ -83,12 +83,20 @@ export default function Settings() {
     setTestStatus('sending...');
     try {
       await api.post('/push/test');
-      setTestStatus('sent! check your notifications ✓');
+      setTestStatus('sent ✓ check your notifications');
     } catch (err) {
-      setTestStatus(err.response?.data?.error || 'failed');
+      setTestStatus(err.response?.data?.error || 'failed to send');
     }
     setTimeout(() => setTestStatus(null), 4000);
   }
+
+  function getPushStatus() {
+    if (!pushSupported) return { label: 'not available', variant: 'off' };
+    if (subscribed) return { label: 'enabled ✓', variant: 'active' };
+    return { label: 'disabled', variant: 'off' };
+  }
+
+  const { label: statusLabel, variant: statusVariant } = getPushStatus();
 
   return (
     <div className="page">
@@ -99,37 +107,42 @@ export default function Settings() {
         <section className="settings-section">
           <h2 className="settings-section-title">push notifications</h2>
 
+          <div className="settings-row">
+            <span className="settings-label">status</span>
+            <span className={`settings-badge badge-${statusVariant}`}>{statusLabel}</span>
+          </div>
+
           {!pushSupported && (
             <p className="settings-hint">
-              push notifications aren't supported in this browser. install the app to your home screen first (iOS requires Safari).
+              not available in this browser. on iOS, install archivo to your home screen via Safari first — then open from the home screen icon to enable push.
             </p>
           )}
 
-          {pushSupported && (
-            <>
-              <div className="settings-row">
-                <span className="settings-label">status</span>
-                <span className={`settings-badge ${subscribed ? 'badge-active' : 'badge-off'}`}>
-                  {subscribed ? 'enabled ✓' : 'disabled'}
-                </span>
-              </div>
+          {pushSupported && permission === 'denied' && (
+            <p className="settings-hint">
+              notifications are blocked. go to your browser/system settings to allow them for this site, then reload.
+            </p>
+          )}
 
-              {permission === 'denied' && (
-                <p className="settings-hint">
-                  notifications are blocked. go to your browser settings to allow them for this site.
-                </p>
-              )}
-
-              <div className="settings-actions">
-                {!subscribed ? (
+          {pushSupported && permission !== 'denied' && (
+            <div className="settings-actions">
+              {!subscribed ? (
+                <button
+                  className="settings-btn settings-btn-primary"
+                  onClick={subscribe}
+                  disabled={loading || !vapidKey}
+                >
+                  {loading ? 'enabling...' : 'enable notifications'}
+                </button>
+              ) : (
+                <>
                   <button
-                    className="settings-btn settings-btn-primary"
-                    onClick={subscribe}
-                    disabled={loading || permission === 'denied' || !vapidKey}
+                    className="settings-btn settings-btn-secondary"
+                    onClick={sendTest}
+                    disabled={!!testStatus}
                   >
-                    {loading ? 'enabling...' : 'enable notifications'}
+                    send test notification
                   </button>
-                ) : (
                   <button
                     className="settings-btn settings-btn-danger"
                     onClick={unsubscribe}
@@ -137,29 +150,19 @@ export default function Settings() {
                   >
                     {loading ? 'disabling...' : 'disable notifications'}
                   </button>
-                )}
-
-                {subscribed && (
-                  <button
-                    className="settings-btn settings-btn-secondary"
-                    onClick={sendTest}
-                  >
-                    send test notification
-                  </button>
-                )}
-              </div>
+                </>
+              )}
 
               {testStatus && <p className="settings-test-status">{testStatus}</p>}
-
-              <p className="settings-hint">
-                notifications fire at the time you set per tracker. enable them on a tracker's edit screen.
-                iOS 16.4+ required — the app must be installed to your home screen first.
-              </p>
-            </>
+            </div>
           )}
+
+          <p className="settings-hint" style={{ marginTop: 12 }}>
+            notification times are set per tracker. edit a tracker to enable daily reminders. iOS 16.4+ required.
+          </p>
         </section>
 
-        {/* App info */}
+        {/* About */}
         <section className="settings-section">
           <h2 className="settings-section-title">about</h2>
           <div className="settings-row">
@@ -168,7 +171,11 @@ export default function Settings() {
           </div>
           <div className="settings-row">
             <span className="settings-label">storage</span>
-            <span className="settings-value">sqlite on railway volume</span>
+            <span className="settings-value">sqlite · railway volume</span>
+          </div>
+          <div className="settings-row" style={{ border: 'none' }}>
+            <span className="settings-label">ai</span>
+            <span className="settings-value">openrouter</span>
           </div>
         </section>
       </div>

@@ -20,17 +20,16 @@ Deploy to Railway, install on your iPhone home screen, use it like a native app 
 | 6. PWA | `manifest.json` + service worker via `vite-plugin-pwa`, offline shell caching, push notification event handler |
 | 7. Crafts | Wishlist + completed tabs, CraftCard with image/tags/source link, CreateCraftModal with OG-scrape, tag chips, photo upload |
 | 8. OpenRouter | Swapped Anthropic SDK → `openai` package pointed at OpenRouter. `OPENROUTER_API_KEY` + optional `OPENROUTER_MODEL` env var |
+| 9. Push notifications | Settings page with subscribe/unsubscribe UI, test notification button, `node-cron` wired up, SW push + notificationclick handlers |
 
 ### ⏳ Remaining
 
 | Step | What's planned |
 |---|---|
-| 9. Push notifications | Web Push subscribe/unsubscribe UI in Settings, test notification button, node-cron delivery wired up |
 | 10. AI: correlation insight | Correlations view — pick 2–3 trackers, dual-axis chart, "archivo thinks..." AI pattern card |
 | 11. AI: craft suggestions | From a contact's birthday page, call OpenRouter → 3 swipeable craft idea cards |
 | 12. Materials inventory | Materials list in Crafts tab, "have it / need to buy" toggle, link materials to crafts |
-| 13. Settings page | Push subscription management, tracker list, JSON data export, app version |
-| 14. Polish | Entry animations, empty states with ASCII art, mobile edge cases, confetti refinement |
+| 13. Polish | Entry animations, empty states with ASCII art, mobile edge cases, confetti refinement |
 
 ---
 
