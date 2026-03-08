@@ -50,23 +50,37 @@ const BLANK = {
   goal_value: '',
   goal_unit: '',
   notifications_enabled: false,
-  notification_time: '09:00',
+  notification_times_local: ['09:00'], // local time strings for display
   color: '#f5c400',
   frequency: 'daily_once',
   tracker_subtype: 'custom',
 };
 
 export default function CreateTrackerModal({ onSave, onClose, existing = null, prefilled = null }) {
-  const [form, setForm] = useState(existing ? {
-    ...existing,
-    goal_value: existing.goal_value ?? '',
-    goal_unit: existing.goal_unit ?? '',
-    // Display notification_time in local time
-    notification_time: existing.notification_time ? utcToLocal(existing.notification_time) : '09:00',
-    notifications_enabled: !!existing.notifications_enabled,
-    frequency: existing.frequency ?? 'daily_once',
-    tracker_subtype: existing.tracker_subtype ?? 'custom',
-  } : prefilled ? { ...BLANK, ...prefilled } : BLANK);
+  const [form, setForm] = useState(() => {
+    if (existing) {
+      // Load notification times: prefer notification_times array, fall back to single notification_time
+      let timesLocal = ['09:00'];
+      if (existing.notification_times) {
+        try {
+          const utcArr = JSON.parse(existing.notification_times);
+          timesLocal = utcArr.map(utcToLocal);
+        } catch {}
+      } else if (existing.notification_time) {
+        timesLocal = [utcToLocal(existing.notification_time)];
+      }
+      return {
+        ...existing,
+        goal_value: existing.goal_value ?? '',
+        goal_unit: existing.goal_unit ?? '',
+        notifications_enabled: !!existing.notifications_enabled,
+        notification_times_local: timesLocal,
+        frequency: existing.frequency ?? 'daily_once',
+        tracker_subtype: existing.tracker_subtype ?? 'custom',
+      };
+    }
+    return prefilled ? { ...BLANK, ...prefilled } : BLANK;
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -84,13 +98,17 @@ export default function CreateTrackerModal({ onSave, onClose, existing = null, p
     setSaving(true);
     setError('');
     try {
+      const utcTimes = form.notifications_enabled
+        ? form.notification_times_local.filter(t => t).map(localToUTC)
+        : [];
       await onSave({
         ...form,
         name: form.name.trim(),
         goal_value: form.goal_value !== '' ? Number(form.goal_value) : null,
         goal_unit: form.goal_unit || null,
-        // Convert notification_time from local to UTC before saving
-        notification_time: form.notifications_enabled ? localToUTC(form.notification_time) : null,
+        // Store all times as UTC JSON array; keep notification_time as first for compat
+        notification_time: utcTimes[0] ?? null,
+        notification_times: utcTimes.length > 0 ? JSON.stringify(utcTimes) : null,
       });
       onClose();
     } catch {
@@ -251,12 +269,35 @@ export default function CreateTrackerModal({ onSave, onClose, existing = null, p
             />
           </label>
           {form.notifications_enabled && (
-            <input
-              type="time"
-              value={form.notification_time}
-              onChange={e => set('notification_time', e.target.value)}
-              style={{ marginTop: '8px' }}
-            />
+            <div className="notif-times-list">
+              {form.notification_times_local.map((t, i) => (
+                <div key={i} className="notif-time-row">
+                  <input
+                    type="time"
+                    value={t}
+                    onChange={e => {
+                      const times = [...form.notification_times_local];
+                      times[i] = e.target.value;
+                      set('notification_times_local', times);
+                    }}
+                  />
+                  {form.notification_times_local.length > 1 && (
+                    <button
+                      type="button"
+                      className="notif-time-remove"
+                      onClick={() => set('notification_times_local', form.notification_times_local.filter((_, fi) => fi !== i))}
+                    >✕</button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                className="notif-time-add"
+                onClick={() => set('notification_times_local', [...form.notification_times_local, '12:00'])}
+              >
+                + add time
+              </button>
+            </div>
           )}
         </div>
 

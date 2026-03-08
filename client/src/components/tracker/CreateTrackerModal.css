@@ -171,6 +171,63 @@
   background: var(--accent-yellow);
 }
 
+.notif-times-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.notif-time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notif-time-row input[type="time"] {
+  flex: 1;
+}
+
+.notif-time-remove {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.1s, border-color 0.1s;
+  padding: 0;
+}
+
+.notif-time-remove:hover {
+  color: var(--accent-red);
+  border-color: color-mix(in srgb, var(--accent-red) 40%, transparent);
+}
+
+.notif-time-add {
+  align-self: flex-start;
+  background: none;
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.notif-time-add:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
 .form-error {
   font-size: 12px;
   color: var(--accent-red);

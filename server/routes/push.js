@@ -66,9 +66,15 @@ module.exports = router;
 module.exports.sendTrackerReminders = async function (timeStr) {
   if (!initWebPush()) return;
   // timeStr is UTC HH:MM passed from cron job
-  const trackers = db.prepare(`
-    SELECT * FROM trackers WHERE notifications_enabled = 1 AND notification_time = ?
-  `).all(timeStr);
+  // Check both single notification_time and the notification_times JSON array
+  const allTrackers = db.prepare('SELECT * FROM trackers WHERE notifications_enabled = 1').all();
+  const trackers = allTrackers.filter(t => {
+    if (t.notification_time === timeStr) return true;
+    if (t.notification_times) {
+      try { return JSON.parse(t.notification_times).includes(timeStr); } catch {}
+    }
+    return false;
+  });
   if (!trackers.length) return;
 
   const subs = db.prepare('SELECT * FROM push_subscriptions').all();
