@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format, parseISO, differenceInCalendarDays, startOfDay } from 'date-fns';
+import { format, parseISO, differenceInCalendarDays, startOfDay, formatDistanceToNow } from 'date-fns';
 import { computeStreak, isLoggedToday, getMilestone } from '../lib/streak';
 import QuickLogCard from '../components/dashboard/QuickLogCard';
 import LogEntryModal from '../components/tracker/LogEntryModal';
@@ -35,46 +35,66 @@ function getUpcomingBirthdays(contacts, days = 30) {
 
 function generateMiniStat(trackers, entriesMap) {
   if (!trackers.length) return null;
-
   const weekAgo = new Date(Date.now() - 7 * 86_400_000);
 
-  // 1. Streak milestones (highest priority)
   for (const t of trackers) {
     const entries = entriesMap[t.id] || [];
     const milestone = getMilestone(computeStreak(entries, t));
-    if (milestone) {
-      return { emoji: '🎉', text: `${t.emoji} ${t.name} just hit a ${milestone}-day milestone!` };
-    }
+    if (milestone) return { emoji: '🎉', text: `${t.emoji} ${t.name} just hit a ${milestone}-day milestone!` };
   }
-
-  // 2. Quit-mode tracker with clean week
   for (const t of trackers.filter(t => t.mode === 'quit')) {
     const weekEntries = (entriesMap[t.id] || []).filter(e => parseISO(e.logged_at) >= weekAgo);
-    if (weekEntries.length === 0) {
-      return { emoji: '✨', text: `zero ${t.name.toLowerCase()} days this week — clean streak going strong ${t.emoji}` };
-    }
+    if (weekEntries.length === 0) return { emoji: '✨', text: `zero ${t.name.toLowerCase()} days this week — clean streak going strong ${t.emoji}` };
   }
-
-  // 3. Do-it tracker crushing it this week (5+ days)
   for (const t of trackers.filter(t => t.mode === 'do_it')) {
     const entries = entriesMap[t.id] || [];
     const weekEntries = entries.filter(e => parseISO(e.logged_at) >= weekAgo);
     const uniqueDays = new Set(weekEntries.map(e => startOfDay(parseISO(e.logged_at)).toDateString())).size;
-    if (uniqueDays >= 5) {
-      return { emoji: '🔥', text: `${t.emoji} ${t.name} ${uniqueDays}/7 days this week — on a roll` };
+    if (uniqueDays >= 5) return { emoji: '🔥', text: `${t.emoji} ${t.name} ${uniqueDays}/7 days this week — on a roll` };
+  }
+  const loggedCount = trackers.filter(t => isLoggedToday(entriesMap[t.id] || [])).length;
+  if (loggedCount > 0) return { emoji: '👀', text: `${loggedCount} of ${trackers.length} tracker${trackers.length !== 1 ? 's' : ''} logged today` };
+  return null;
+}
+
+function buildFeed(trackers, entriesMap, crafts) {
+  const trackerMap = Object.fromEntries(trackers.map(t => [t.id, t]));
+  const items = [];
+
+  // Recent tracker entries (last 7 days)
+  const cutoff = Date.now() - 7 * 86_400_000;
+  for (const [trackerId, entries] of Object.entries(entriesMap)) {
+    const tracker = trackerMap[trackerId];
+    if (!tracker) continue;
+    for (const entry of entries) {
+      if (new Date(entry.logged_at) >= cutoff) {
+        items.push({ type: 'entry', entry, tracker, date: entry.logged_at });
+      }
     }
   }
 
-  // 4. Something logged today at all
-  const loggedCount = trackers.filter(t => isLoggedToday(entriesMap[t.id] || [])).length;
-  if (loggedCount > 0) {
-    return {
-      emoji: '👀',
-      text: `${loggedCount} of ${trackers.length} tracker${trackers.length !== 1 ? 's' : ''} logged today`,
-    };
+  // Recent crafts (last 14 days)
+  for (const craft of crafts) {
+    if (new Date(craft.created_at) >= Date.now() - 14 * 86_400_000) {
+      items.push({ type: 'craft', craft, date: craft.created_at });
+    }
   }
 
-  return null;
+  return items
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 20);
+}
+
+function formatEntryValue(entry, tracker) {
+  if (!tracker) return entry.value;
+  const subtype = tracker.tracker_subtype;
+  if (subtype === 'menstruation') {
+    const labels = { '1': 'spotting', '2': 'light', '3': 'medium', '4': 'heavy' };
+    return labels[entry.value] ?? entry.value;
+  }
+  if (tracker.type === 'boolean') return entry.value === '1' ? 'logged ✓' : 'skipped';
+  if (tracker.type === 'scale') return `${entry.value}/10`;
+  return entry.value || '—';
 }
 
 // ─── component ────────────────────────────────────────────────────────────────
@@ -84,19 +104,22 @@ export default function Dashboard() {
   const [trackers, setTrackers] = useState([]);
   const [entriesMap, setEntriesMap] = useState({});
   const [contacts, setContacts] = useState([]);
+  const [crafts, setCrafts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [logTarget, setLogTarget] = useState(null);
 
   const loadData = useCallback(async () => {
-    const [{ data: ts }, { data: cs }] = await Promise.all([
+    const [{ data: ts }, { data: cs }, { data: cr }] = await Promise.all([
       api.get('/trackers'),
       api.get('/contacts'),
+      api.get('/crafts'),
     ]);
     setTrackers(ts);
     setContacts(cs);
+    setCrafts(cr);
 
     const results = await Promise.all(
-      ts.map(t => api.get(`/trackers/${t.id}/entries?days=90`).then(r => [t.id, r.data]))
+      ts.map(t => api.get(`/trackers/${t.id}/entries?days=14`).then(r => [t.id, r.data]))
     );
     setEntriesMap(Object.fromEntries(results));
     setLoading(false);
@@ -107,7 +130,7 @@ export default function Dashboard() {
   async function handleQuickLog(tracker) {
     if (tracker.type === 'boolean') {
       await api.post(`/trackers/${tracker.id}/entries`, { value: '1' });
-      const { data } = await api.get(`/trackers/${tracker.id}/entries?days=90`);
+      const { data } = await api.get(`/trackers/${tracker.id}/entries?days=14`);
       setEntriesMap(m => ({ ...m, [tracker.id]: data }));
     } else {
       setLogTarget(tracker);
@@ -116,13 +139,15 @@ export default function Dashboard() {
 
   async function handleLog(tracker, entryData) {
     await api.post(`/trackers/${tracker.id}/entries`, entryData);
-    const { data } = await api.get(`/trackers/${tracker.id}/entries?days=90`);
+    const { data } = await api.get(`/trackers/${tracker.id}/entries?days=14`);
     setEntriesMap(m => ({ ...m, [tracker.id]: data }));
   }
 
   const dateStr = format(new Date(), "EEEE, do 'of' MMMM").toLowerCase();
   const birthdays = getUpcomingBirthdays(contacts);
   const miniStat = generateMiniStat(trackers, entriesMap);
+  const feed = buildFeed(trackers, entriesMap, crafts);
+  const hasAnyData = trackers.length > 0 || crafts.length > 0;
 
   return (
     <div className="page">
@@ -160,7 +185,7 @@ export default function Dashboard() {
           )}
         </section>
 
-        {/* Today at a glance — logged status chips */}
+        {/* Today at a glance */}
         {!loading && trackers.length > 0 && (
           <div className="glance-strip">
             {trackers.map(t => {
@@ -200,24 +225,64 @@ export default function Dashboard() {
                 <div key={c.id} className="birthday-row">
                   <div className="birthday-info">
                     <span className="birthday-name">{c.name}</span>
-                    <span className="birthday-date">
-                      {format(c.nextDate, 'MMM d')}
-                    </span>
+                    <span className="birthday-date">{format(c.nextDate, 'MMM d')}</span>
                   </div>
                   <div className="birthday-right">
                     <span className={`birthday-countdown ${c.daysUntil === 0 ? 'today' : c.daysUntil <= 7 ? 'soon' : ''}`}>
                       {c.daysUntil === 0 ? '🎂 today!' : c.daysUntil === 1 ? 'tomorrow' : `in ${c.daysUntil}d`}
                     </span>
-                    <button
-                      className="btn btn-ghost craft-ideas-btn"
-                      onClick={() => navigate('/crafts')}
-                    >
-                      get craft ideas ✨
+                    <button className="btn btn-ghost craft-ideas-btn" onClick={() => navigate('/crafts')}>
+                      craft ideas ✨
                     </button>
                   </div>
                 </div>
               ))}
             </div>
+          </section>
+        )}
+
+        {/* Activity feed */}
+        {!loading && (
+          <section className="dash-section">
+            <div className="section-label">recent activity</div>
+            {!hasAnyData ? (
+              <div className="feed-empty">
+                <span className="feed-empty-art">[ nothing yet ]</span>
+                <span className="feed-empty-sub">start adding things — your activity will show up here ↑</span>
+              </div>
+            ) : feed.length === 0 ? (
+              <div className="feed-empty">
+                <span className="feed-empty-art">[ quiet week ]</span>
+                <span className="feed-empty-sub">log a tracker or add a craft to see activity here</span>
+              </div>
+            ) : (
+              <div className="feed-list">
+                {feed.map((item, i) => (
+                  <div key={i} className="feed-item">
+                    {item.type === 'entry' ? (
+                      <>
+                        <span className="feed-icon">{item.tracker.emoji}</span>
+                        <div className="feed-content">
+                          <span className="feed-label">
+                            {item.tracker.name} — <span className="feed-value">{formatEntryValue(item.entry, item.tracker)}</span>
+                            {item.entry.notes && <span className="feed-notes"> · {item.entry.notes}</span>}
+                          </span>
+                          <span className="feed-time">{formatDistanceToNow(parseISO(item.date), { addSuffix: true })}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span className="feed-icon">✂️</span>
+                        <div className="feed-content">
+                          <span className="feed-label">added <span className="feed-value">{item.craft.title}</span> to crafts</span>
+                          <span className="feed-time">{formatDistanceToNow(parseISO(item.date), { addSuffix: true })}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         )}
 

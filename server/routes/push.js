@@ -63,10 +63,9 @@ router.post('/test', async (req, res) => {
 
 // Export so cron jobs can use it
 module.exports = router;
-module.exports.sendTrackerReminders = async function () {
+module.exports.sendTrackerReminders = async function (timeStr) {
   if (!initWebPush()) return;
-  const now = new Date();
-  const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  // timeStr is UTC HH:MM passed from cron job
   const trackers = db.prepare(`
     SELECT * FROM trackers WHERE notifications_enabled = 1 AND notification_time = ?
   `).all(timeStr);
@@ -79,10 +78,12 @@ module.exports.sendTrackerReminders = async function () {
       body: `time to log your ${tracker.name.toLowerCase()} tracker`,
       data: { trackerId: tracker.id },
     });
-    await Promise.allSettled(
+    const results = await Promise.allSettled(
       subs.map(sub =>
         webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload)
       )
     );
+    const sent = results.filter(r => r.status === 'fulfilled').length;
+    console.log(`[push] sent ${sent}/${subs.length} for tracker "${tracker.name}" at ${timeStr} UTC`);
   }
 };

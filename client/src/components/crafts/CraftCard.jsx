@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import ConfirmModal from '../ui/ConfirmModal';
 import './CraftCard.css';
 
 export default function CraftCard({ craft, onComplete, onUncomplete, onEdit, onDelete }) {
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const imageUrl = craft.images?.[0]?.filepath
     ? `/uploads/${craft.images[0].filepath}`
@@ -26,14 +27,7 @@ export default function CraftCard({ craft, onComplete, onUncomplete, onEdit, onD
           </div>
           <div className="craft-card-actions">
             <button className="craft-action-btn" onClick={() => onEdit(craft)}>✎</button>
-            {confirmDelete ? (
-              <>
-                <button className="craft-action-btn danger" onClick={() => onDelete(craft.id)}>✓</button>
-                <button className="craft-action-btn" onClick={() => setConfirmDelete(false)}>✕</button>
-              </>
-            ) : (
-              <button className="craft-action-btn" onClick={() => setConfirmDelete(true)}>🗑</button>
-            )}
+            <button className="craft-action-btn" onClick={() => setShowDeleteConfirm(true)}>🗑</button>
           </div>
         </div>
 
@@ -77,6 +71,13 @@ export default function CraftCard({ craft, onComplete, onUncomplete, onEdit, onD
           )}
         </div>
       </div>
+      {showDeleteConfirm && (
+        <ConfirmModal
+          message={`delete "${craft.title}"?`}
+          onConfirm={() => onDelete(craft.id)}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
     </div>
   );
 }

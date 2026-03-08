@@ -194,7 +194,7 @@
   padding: 5px 10px;
   border-radius: 20px;
   color: var(--accent-blue);
-  border-color: rgba(74, 240, 228, 0.3);
+  border-color: color-mix(in srgb, var(--accent-blue) 30%, transparent);
 }
 
 /* ─── Empty state ─── */
@@ -223,6 +223,86 @@
   font-family: var(--font-mono);
   font-size: 22px;
   letter-spacing: 0.1em;
+}
+
+/* ─── Activity feed ─── */
+
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.feed-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.feed-item:last-child {
+  border-bottom: none;
+}
+
+.feed-icon {
+  font-size: 16px;
+  width: 24px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.feed-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.feed-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.feed-value {
+  color: var(--text);
+}
+
+.feed-notes {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.feed-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.feed-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.feed-empty-art {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.feed-empty-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
 @keyframes fade-slide-in {

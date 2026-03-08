@@ -6,14 +6,14 @@ import api from '../lib/api';
 import './Trackers.css';
 
 const ONBOARDING_PRESETS = [
-  { name: 'Gym', emoji: '💪', type: 'boolean', mode: 'do_it', color: '#f5c400' },
-  { name: 'Sugar', emoji: '🍬', type: 'boolean', mode: 'quit', color: '#d93f2e' },
-  { name: 'Daily Meds', emoji: '💊', type: 'boolean', mode: 'do_it', color: '#2563eb' },
-  { name: 'Poop', emoji: '💩', type: 'boolean', mode: 'track_only', color: '#a78bfa' },
-  { name: 'Menstruation', emoji: '🩸', type: 'boolean', mode: 'track_only', color: '#d93f2e' },
-  { name: 'Water', emoji: '💧', type: 'quantity', mode: 'do_it', color: '#2563eb', goal_value: 8, goal_unit: 'glasses' },
-  { name: 'Mood', emoji: '🌡', type: 'scale', mode: 'track_only', color: '#f5c400' },
-  { name: 'Journal', emoji: '📝', type: 'text', mode: 'do_it', color: '#a78bfa' },
+  { name: 'Gym', emoji: '💪', type: 'boolean', mode: 'do_it', color: '#f5c400', frequency: 'daily_once', tracker_subtype: 'gym' },
+  { name: 'Sugar', emoji: '🍬', type: 'boolean', mode: 'quit', color: '#d93f2e', frequency: 'daily_multiple', tracker_subtype: 'sugar' },
+  { name: 'Daily Meds', emoji: '💊', type: 'boolean', mode: 'do_it', color: '#2563eb', frequency: 'daily_once', tracker_subtype: 'meds' },
+  { name: 'Poop', emoji: '💩', type: 'boolean', mode: 'track_only', color: '#a78bfa', frequency: 'daily_multiple', tracker_subtype: 'poop' },
+  { name: 'Menstruation', emoji: '🩸', type: 'scale', mode: 'track_only', color: '#d93f2e', frequency: 'monthly', tracker_subtype: 'menstruation' },
+  { name: 'Water', emoji: '💧', type: 'quantity', mode: 'do_it', color: '#2563eb', goal_value: 8, goal_unit: 'glasses', frequency: 'daily_once', tracker_subtype: 'custom' },
+  { name: 'Mood', emoji: '🌡', type: 'scale', mode: 'track_only', color: '#f5c400', frequency: 'daily_once', tracker_subtype: 'custom' },
+  { name: 'Journal', emoji: '📝', type: 'text', mode: 'do_it', color: '#a78bfa', frequency: 'daily_once', tracker_subtype: 'custom' },
 ];
 
 function OnboardingPicker({ onCreate, onCustom }) {

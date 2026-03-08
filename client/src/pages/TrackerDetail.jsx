@@ -6,6 +6,7 @@ import { computeStreak, isLoggedToday, getMilestone } from '../lib/streak';
 import LogEntryModal from '../components/tracker/LogEntryModal';
 import CreateTrackerModal from '../components/tracker/CreateTrackerModal';
 import HeatmapCalendar from '../components/tracker/HeatmapCalendar';
+import ConfirmModal from '../components/ui/ConfirmModal';
 import api from '../lib/api';
 import './TrackerDetail.css';
 
@@ -48,6 +49,7 @@ export default function TrackerDetail() {
   const [showEdit, setShowEdit] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteEntryId, setDeleteEntryId] = useState(null);
 
   const load = useCallback(async () => {
     const [t, e] = await Promise.all([
@@ -92,9 +94,9 @@ export default function TrackerDetail() {
   }
 
   async function handleDeleteEntry(entryId) {
-    if (!confirm('delete this entry?')) return;
     await api.delete(`/entries/${entryId}`);
     setEntries(e => e.filter(x => x.id !== entryId));
+    setDeleteEntryId(null);
   }
 
   async function handleSaveTracker(form) {
@@ -216,7 +218,7 @@ export default function TrackerDetail() {
                     </span>
                     <div className="entry-actions">
                       <button className="entry-action-btn" onClick={() => setEditEntry(entry)}>✎</button>
-                      <button className="entry-action-btn danger" onClick={() => handleDeleteEntry(entry.id)}>✕</button>
+                      <button className="entry-action-btn danger" onClick={() => setDeleteEntryId(entry.id)}>✕</button>
                     </div>
                   </div>
                 </div>
@@ -230,13 +232,6 @@ export default function TrackerDetail() {
           <button className="btn btn-ghost danger" onClick={() => setShowDeleteConfirm(true)}>
             delete tracker
           </button>
-          {showDeleteConfirm && (
-            <div className="confirm-delete">
-              <span>this deletes all entries too. sure?</span>
-              <button className="btn btn-coral" onClick={handleDeleteTracker} style={{ padding: '8px 16px' }}>yes, delete</button>
-              <button className="btn btn-ghost" onClick={() => setShowDeleteConfirm(false)} style={{ padding: '8px 16px' }}>cancel</button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -262,6 +257,22 @@ export default function TrackerDetail() {
           existing={tracker}
           onSave={handleSaveTracker}
           onClose={() => setShowEdit(false)}
+        />
+      )}
+
+      {deleteEntryId && (
+        <ConfirmModal
+          message="delete this entry? this can't be undone."
+          onConfirm={() => handleDeleteEntry(deleteEntryId)}
+          onCancel={() => setDeleteEntryId(null)}
+        />
+      )}
+
+      {showDeleteConfirm && (
+        <ConfirmModal
+          message={`delete "${tracker.name}"? this removes all entries too.`}
+          onConfirm={handleDeleteTracker}
+          onCancel={() => setShowDeleteConfirm(false)}
         />
       )}
     </div>

@@ -38,13 +38,13 @@
 
 .bool-btn.active {
   border-color: var(--accent-yellow);
-  background: rgba(200, 241, 53, 0.12);
+  background: color-mix(in srgb, var(--accent-yellow) 12%, transparent);
   color: var(--accent-yellow);
 }
 
 .bool-btn.skip.active {
   border-color: var(--accent-red);
-  background: rgba(255, 107, 74, 0.12);
+  background: color-mix(in srgb, var(--accent-red) 12%, transparent);
   color: var(--accent-red);
 }
 
@@ -69,6 +69,118 @@
 
 .scale-btn.active {
   border-color: var(--accent-blue);
-  background: rgba(74, 240, 228, 0.15);
+  background: color-mix(in srgb, var(--accent-blue) 15%, transparent);
   color: var(--accent-blue);
+}
+
+/* ── Bristol scale ── */
+.bristol-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bristol-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+  text-align: left;
+}
+
+.bristol-btn.active {
+  border-color: var(--accent-yellow);
+  background: color-mix(in srgb, var(--accent-yellow) 10%, transparent);
+}
+
+.bristol-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.bristol-btn.active .bristol-num { color: var(--accent-yellow); }
+
+.bristol-desc {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.bristol-btn.active .bristol-desc { color: var(--text); }
+
+/* ── Menstruation flow ── */
+.flow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.flow-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 6px;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.flow-btn.active {
+  border-color: var(--accent-red);
+  background: color-mix(in srgb, var(--accent-red) 12%, transparent);
+}
+
+.flow-dot {
+  font-size: 14px;
+  color: var(--text-muted);
+  letter-spacing: -2px;
+}
+
+.flow-btn.active .flow-dot { color: var(--accent-red); }
+
+.flow-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.flow-btn.active .flow-label { color: var(--accent-red); }
+
+/* ── Gym training type ── */
+.training-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.training-chip {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.training-chip.active {
+  border-color: var(--accent-yellow);
+  background: color-mix(in srgb, var(--accent-yellow) 12%, transparent);
+  color: var(--accent-yellow);
 }

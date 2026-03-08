@@ -125,22 +125,9 @@ function addColumn(table, col, definition) {
 addColumn('trackers', 'max_entries_per_day', 'INTEGER NOT NULL DEFAULT 1');
 addColumn('trackers', 'notification_times', 'TEXT');
 addColumn('crafts', 'for_person', 'TEXT');
-
-// Seed sample trackers if none exist
-const trackerCount = db.prepare('SELECT COUNT(*) as count FROM trackers').get();
-if (trackerCount.count === 0) {
-  const insertTracker = db.prepare(`
-    INSERT INTO trackers (name, emoji, type, mode, color)
-    VALUES (@name, @emoji, @type, @mode, @color)
-  `);
-  const seedTrackers = db.transaction(() => {
-    insertTracker.run({ name: 'Gym', emoji: '💪', type: 'boolean', mode: 'do_it', color: '#f5c400' });
-    insertTracker.run({ name: 'Sugar', emoji: '🍬', type: 'boolean', mode: 'quit', color: '#d93f2e' });
-    insertTracker.run({ name: 'Daily Meds', emoji: '💊', type: 'boolean', mode: 'do_it', color: '#2563eb' });
-  });
-  seedTrackers();
-  console.log('[db] Seeded sample trackers');
-}
+addColumn('trackers', 'frequency', 'TEXT NOT NULL DEFAULT "daily_once"');
+addColumn('trackers', 'tracker_subtype', 'TEXT');
+addColumn('tracker_entries', 'entry_metadata', 'TEXT');
 
 // Auto-create admin user from env vars if no users exist
 if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {

@@ -2,18 +2,45 @@ import React, { useState } from 'react';
 import Modal from '../ui/Modal';
 import './CreateTrackerModal.css';
 
+// Convert HH:MM local time to UTC HH:MM for storage
+function localToUTC(hhmm) {
+  if (!hhmm) return hhmm;
+  const [h, m] = hhmm.split(':').map(Number);
+  const offset = new Date().getTimezoneOffset(); // (UTC - local) in minutes
+  let utcMinutes = h * 60 + m + offset;
+  utcMinutes = ((utcMinutes % 1440) + 1440) % 1440;
+  return `${String(Math.floor(utcMinutes / 60)).padStart(2, '0')}:${String(utcMinutes % 60).padStart(2, '0')}`;
+}
+
+// Convert UTC HH:MM from DB to local HH:MM for display
+function utcToLocal(hhmm) {
+  if (!hhmm) return hhmm;
+  const [h, m] = hhmm.split(':').map(Number);
+  const offset = new Date().getTimezoneOffset();
+  let localMinutes = h * 60 + m - offset;
+  localMinutes = ((localMinutes % 1440) + 1440) % 1440;
+  return `${String(Math.floor(localMinutes / 60)).padStart(2, '0')}:${String(localMinutes % 60).padStart(2, '0')}`;
+}
+
 const PRESETS = [
-  { name: 'Gym', emoji: '💪', type: 'boolean', mode: 'do_it', color: '#f5c400' },
-  { name: 'Sugar', emoji: '🍬', type: 'boolean', mode: 'quit', color: '#d93f2e' },
-  { name: 'Daily Meds', emoji: '💊', type: 'boolean', mode: 'do_it', color: '#2563eb' },
-  { name: 'Poop', emoji: '💩', type: 'boolean', mode: 'track_only', color: '#a78bfa' },
-  { name: 'Period', emoji: '🩸', type: 'boolean', mode: 'track_only', color: '#d93f2e' },
-  { name: 'Water', emoji: '💧', type: 'quantity', mode: 'do_it', color: '#2563eb', goal_value: 8, goal_unit: 'glasses' },
-  { name: 'Mood', emoji: '🌡', type: 'scale', mode: 'track_only', color: '#f5c400' },
-  { name: 'Journal', emoji: '📝', type: 'text', mode: 'do_it', color: '#a78bfa' },
+  { name: 'Gym', emoji: '💪', type: 'boolean', mode: 'do_it', color: '#f5c400', frequency: 'daily_once', tracker_subtype: 'gym' },
+  { name: 'Sugar', emoji: '🍬', type: 'boolean', mode: 'quit', color: '#d93f2e', frequency: 'daily_multiple', tracker_subtype: 'sugar' },
+  { name: 'Daily Meds', emoji: '💊', type: 'boolean', mode: 'do_it', color: '#2563eb', frequency: 'daily_once', tracker_subtype: 'meds' },
+  { name: 'Poop', emoji: '💩', type: 'boolean', mode: 'track_only', color: '#a78bfa', frequency: 'daily_multiple', tracker_subtype: 'poop' },
+  { name: 'Period', emoji: '🩸', type: 'scale', mode: 'track_only', color: '#d93f2e', frequency: 'monthly', tracker_subtype: 'menstruation' },
+  { name: 'Water', emoji: '💧', type: 'quantity', mode: 'do_it', color: '#2563eb', goal_value: 8, goal_unit: 'glasses', frequency: 'daily_once', tracker_subtype: 'custom' },
+  { name: 'Mood', emoji: '🌡', type: 'scale', mode: 'track_only', color: '#f5c400', frequency: 'daily_once', tracker_subtype: 'custom' },
+  { name: 'Journal', emoji: '📝', type: 'text', mode: 'do_it', color: '#a78bfa', frequency: 'daily_once', tracker_subtype: 'custom' },
 ];
 
 const COLORS = ['#f5c400', '#d93f2e', '#2563eb', '#a78bfa', '#fbbf24', '#f472b6', '#34d399', '#60a5fa'];
+
+const FREQUENCY_OPTIONS = [
+  { value: 'daily_once',     label: 'once a day' },
+  { value: 'daily_multiple', label: 'multiple / day' },
+  { value: 'weekly',         label: 'a few / week' },
+  { value: 'monthly',        label: 'a few / month' },
+];
 
 const BLANK = {
   name: '',
@@ -25,7 +52,8 @@ const BLANK = {
   notifications_enabled: false,
   notification_time: '09:00',
   color: '#f5c400',
-  max_entries_per_day: 1,
+  frequency: 'daily_once',
+  tracker_subtype: 'custom',
 };
 
 export default function CreateTrackerModal({ onSave, onClose, existing = null, prefilled = null }) {
@@ -33,9 +61,11 @@ export default function CreateTrackerModal({ onSave, onClose, existing = null, p
     ...existing,
     goal_value: existing.goal_value ?? '',
     goal_unit: existing.goal_unit ?? '',
-    notification_time: existing.notification_time ?? '09:00',
+    // Display notification_time in local time
+    notification_time: existing.notification_time ? utcToLocal(existing.notification_time) : '09:00',
     notifications_enabled: !!existing.notifications_enabled,
-    max_entries_per_day: existing.max_entries_per_day ?? 1,
+    frequency: existing.frequency ?? 'daily_once',
+    tracker_subtype: existing.tracker_subtype ?? 'custom',
   } : prefilled ? { ...BLANK, ...prefilled } : BLANK);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -59,8 +89,8 @@ export default function CreateTrackerModal({ onSave, onClose, existing = null, p
         name: form.name.trim(),
         goal_value: form.goal_value !== '' ? Number(form.goal_value) : null,
         goal_unit: form.goal_unit || null,
-        notification_time: form.notifications_enabled ? form.notification_time : null,
-        max_entries_per_day: form.max_entries_per_day,
+        // Convert notification_time from local to UTC before saving
+        notification_time: form.notifications_enabled ? localToUTC(form.notification_time) : null,
       });
       onClose();
     } catch {
@@ -156,17 +186,14 @@ export default function CreateTrackerModal({ onSave, onClose, existing = null, p
         </div>
 
         <div className="form-field">
-          <label>entries per day</label>
+          <label>how often?</label>
           <div className="option-grid cols-2">
-            {[
-              { value: 1, label: 'once' },
-              { value: 0, label: 'multiple' },
-            ].map(opt => (
+            {FREQUENCY_OPTIONS.map(opt => (
               <button
                 key={opt.value}
                 type="button"
-                className={`option-btn ${form.max_entries_per_day === opt.value ? 'active' : ''}`}
-                onClick={() => set('max_entries_per_day', opt.value)}
+                className={`option-btn ${form.frequency === opt.value ? 'active' : ''}`}
+                onClick={() => set('frequency', opt.value)}
               >
                 {opt.label}
               </button>

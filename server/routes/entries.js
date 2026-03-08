@@ -6,13 +6,14 @@ const { db } = require('../db');
 router.put('/:id', (req, res) => {
   const entry = db.prepare('SELECT * FROM tracker_entries WHERE id = ?').get(req.params.id);
   if (!entry) return res.status(404).json({ error: 'Not found' });
-  const { value, notes, logged_at } = req.body;
+  const { value, notes, logged_at, entry_metadata } = req.body;
   db.prepare(`
-    UPDATE tracker_entries SET value = ?, notes = ?, logged_at = ? WHERE id = ?
+    UPDATE tracker_entries SET value = ?, notes = ?, logged_at = ?, entry_metadata = ? WHERE id = ?
   `).run(
     value !== undefined ? String(value) : entry.value,
     notes !== undefined ? notes : entry.notes,
     logged_at ?? entry.logged_at,
+    entry_metadata !== undefined ? JSON.stringify(entry_metadata) : entry.entry_metadata,
     req.params.id
   );
   res.json(db.prepare('SELECT * FROM tracker_entries WHERE id = ?').get(req.params.id));
