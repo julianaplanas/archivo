@@ -1,4 +1,5 @@
 const Database = require('better-sqlite3');
+const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 
@@ -131,6 +132,16 @@ if (trackerCount.count === 0) {
   });
   seedTrackers();
   console.log('[db] Seeded sample trackers');
+}
+
+// Auto-create admin user from env vars if no users exist
+if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
+  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
+  if (userCount.count === 0) {
+    const hash = bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10);
+    db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(process.env.ADMIN_USERNAME, hash);
+    console.log(`[db] Created admin user: ${process.env.ADMIN_USERNAME}`);
+  }
 }
 
 module.exports = { db, UPLOADS_PATH, DATA_PATH };
