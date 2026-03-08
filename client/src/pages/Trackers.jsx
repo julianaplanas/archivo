@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import TrackerCard from '../components/tracker/TrackerCard';
+import SharedTrackerCalendar from '../components/tracker/SharedTrackerCalendar';
 import CreateTrackerModal from '../components/tracker/CreateTrackerModal';
 import LogEntryModal from '../components/tracker/LogEntryModal';
 import api from '../lib/api';
@@ -122,6 +123,8 @@ export default function Trackers() {
             onCustom={() => setShowCreate(true)}
           />
         ) : (
+          <>
+          <SharedTrackerCalendar trackers={trackers} entriesMap={entriesMap} />
           <div className="tracker-list">
             {trackers.map((t, i) => (
               <TrackerCard
@@ -134,6 +137,7 @@ export default function Trackers() {
               />
             ))}
           </div>
+          </>
         )}
       </div>
 

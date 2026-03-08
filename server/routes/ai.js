@@ -104,4 +104,37 @@ router.post('/craft-suggestions', async (req, res) => {
   }
 });
 
+// POST /api/ai/book-autocomplete
+router.post('/book-autocomplete', async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query || query.trim().length < 2) return res.json({ suggestions: [] });
+
+    const response = await getClient().chat.completions.create({
+      model: MODEL,
+      max_tokens: 300,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a book search assistant. Return ONLY valid JSON, no other text.',
+        },
+        {
+          role: 'user',
+          content: `The user is typing a book title or author: "${query.trim()}". Suggest up to 4 possible book matches. Return a JSON array with objects: [{title, author, year}]. Only include real books.`,
+        },
+      ],
+    });
+
+    try {
+      const text = response.choices[0].message.content;
+      const json = JSON.parse(text.match(/\[[\s\S]*\]/)[0]);
+      res.json({ suggestions: json });
+    } catch {
+      res.json({ suggestions: [] });
+    }
+  } catch (err) {
+    res.status(503).json({ error: err.message });
+  }
+});
+
 module.exports = router;

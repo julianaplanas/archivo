@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Trackers from './pages/Trackers';
 import TrackerDetail from './pages/TrackerDetail';
 import Crafts from './pages/Crafts';
+import Books from './pages/Books';
 import Settings from './pages/Settings';
 import TabBar from './components/TabBar';
 import api from './lib/api';
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/trackers" element={<><Trackers /><TabBar /></>} />
             <Route path="/trackers/:id" element={<><TrackerDetail /><TabBar /></>} />
             <Route path="/crafts" element={<><Crafts /><TabBar /></>} />
+            <Route path="/books" element={<><Books /><TabBar /></>} />
             <Route path="/settings" element={<><Settings /><TabBar /></>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </>

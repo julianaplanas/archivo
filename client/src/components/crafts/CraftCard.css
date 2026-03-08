@@ -31,6 +31,10 @@
   gap: 8px;
 }
 
+.craft-card {
+  cursor: pointer;
+}
+
 .craft-card-top {
   display: flex;
   align-items: flex-start;
@@ -63,6 +67,35 @@
   border-radius: 20px;
   padding: 2px 8px;
   align-self: flex-start;
+}
+
+.craft-title-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.craft-deadline-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.craft-deadline-badge.soon {
+  color: var(--accent-yellow);
+  background: color-mix(in srgb, var(--accent-yellow) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent-yellow) 30%, transparent);
+}
+
+.craft-deadline-badge.overdue {
+  color: var(--accent-red);
+  background: color-mix(in srgb, var(--accent-red) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent-red) 30%, transparent);
 }
 
 .craft-for-person {

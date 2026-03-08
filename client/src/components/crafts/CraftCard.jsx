@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 import ConfirmModal from '../ui/ConfirmModal';
 import './CraftCard.css';
 
-export default function CraftCard({ craft, onComplete, onUncomplete, onEdit, onDelete }) {
+function daysUntil(dateStr) {
+  try { return differenceInCalendarDays(parseISO(dateStr), new Date()); } catch { return null; }
+}
+
+export default function CraftCard({ craft, onOpen, onComplete, onUncomplete, onEdit, onDelete }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const imageUrl = craft.images?.[0]?.filepath
@@ -10,9 +15,10 @@ export default function CraftCard({ craft, onComplete, onUncomplete, onEdit, onD
     : craft.og_image || null;
 
   const isCompleted = craft.status === 'completed';
+  const deadline = craft.deadline_date ? daysUntil(craft.deadline_date) : null;
 
   return (
-    <div className={`craft-card ${isCompleted ? 'completed' : ''}`}>
+    <div className={`craft-card ${isCompleted ? 'completed' : ''}`} onClick={() => onOpen(craft)}>
       {imageUrl && (
         <div className="craft-card-img">
           <img src={imageUrl} alt={craft.title} loading="lazy" />
@@ -23,9 +29,16 @@ export default function CraftCard({ craft, onComplete, onUncomplete, onEdit, onD
         <div className="craft-card-top">
           <div className="craft-title-row">
             <span className="craft-title">{craft.title}</span>
-            {isCompleted && <span className="craft-completed-badge">completed ✓</span>}
+            <div className="craft-title-meta">
+              {isCompleted && <span className="craft-completed-badge">completed ✓</span>}
+              {deadline !== null && !isCompleted && (
+                <span className={`craft-deadline-badge ${deadline < 0 ? 'overdue' : deadline <= 7 ? 'soon' : ''}`}>
+                  {deadline < 0 ? `overdue ${Math.abs(deadline)}d` : deadline === 0 ? '🗓 today!' : `🗓 ${deadline}d`}
+                </span>
+              )}
+            </div>
           </div>
-          <div className="craft-card-actions">
+          <div className="craft-card-actions" onClick={e => e.stopPropagation()}>
             <button className="craft-action-btn" onClick={() => onEdit(craft)}>✎</button>
             <button className="craft-action-btn" onClick={() => setShowDeleteConfirm(true)}>🗑</button>
           </div>
@@ -47,19 +60,7 @@ export default function CraftCard({ craft, onComplete, onUncomplete, onEdit, onD
           <p className="craft-description">{craft.description}</p>
         )}
 
-        {craft.source_url && (
-          <a
-            href={craft.source_url}
-            className="craft-source-link"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={e => e.stopPropagation()}
-          >
-            {craft.og_title || new URL(craft.source_url).hostname} ↗
-          </a>
-        )}
-
-        <div className="craft-footer">
+        <div className="craft-footer" onClick={e => e.stopPropagation()}>
           {isCompleted ? (
             <button className="craft-uncomplete-btn" onClick={() => onUncomplete(craft)}>
               undo ✕
@@ -71,6 +72,7 @@ export default function CraftCard({ craft, onComplete, onUncomplete, onEdit, onD
           )}
         </div>
       </div>
+
       {showDeleteConfirm && (
         <ConfirmModal
           message={`delete "${craft.title}"?`}

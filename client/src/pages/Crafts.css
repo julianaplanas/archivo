@@ -39,6 +39,133 @@
   border-color: color-mix(in srgb, var(--accent-yellow) 40%, transparent);
 }
 
+.crafts-search-bar {
+  padding: 0 16px 8px;
+  flex-shrink: 0;
+}
+
+.crafts-search-input {
+  width: 100%;
+}
+
+.crafts-tag-filter {
+  display: flex;
+  gap: 6px;
+  padding: 0 16px 8px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.crafts-tag-filter::-webkit-scrollbar { display: none; }
+
+.craft-tag-filter-chip {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.craft-tag-filter-chip.active {
+  color: var(--accent-blue);
+  background: color-mix(in srgb, var(--accent-blue) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent-blue) 40%, transparent);
+}
+
+/* Shopping list */
+.shopping-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.shopping-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  transition: background 0.1s;
+}
+
+.shopping-item:hover { background: var(--surface-2); }
+.shopping-item.purchased { opacity: 0.5; }
+
+.shopping-check {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.shopping-check:hover {
+  border-color: var(--accent-yellow);
+  color: var(--accent-yellow);
+}
+
+.shopping-item.purchased .shopping-check {
+  border-color: var(--accent-yellow);
+  color: var(--accent-yellow);
+}
+
+.shopping-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.shopping-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.shopping-qty {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.shopping-craft {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-blue);
+}
+
+.shopping-purchased-section {
+  border-top: 1px solid var(--border);
+}
+
+.shopping-purchased-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 14px 4px;
+}
+
 .crafts-list {
   display: flex;
   flex-direction: column;

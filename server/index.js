@@ -50,6 +50,7 @@ app.use('/api/contacts', requireAuth, require('./routes/contacts'));
 app.use('/api/push', requireAuth, require('./routes/push'));
 app.use('/api/ai', requireAuth, require('./routes/ai'));
 app.use('/api/og', requireAuth, require('./routes/og'));
+app.use('/api/books', requireAuth, require('./routes/books'));
 
 // Serve React frontend whenever client/dist exists
 const clientDist = path.join(__dirname, '..', 'client', 'dist');

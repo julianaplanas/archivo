@@ -28,7 +28,7 @@
   height: 4px;
   background: var(--border);
   border-radius: 2px;
-  margin: 12px auto 0;
+  margin: calc(env(safe-area-inset-top, 0px) + 12px) auto 0;
 }
 
 .modal-title {

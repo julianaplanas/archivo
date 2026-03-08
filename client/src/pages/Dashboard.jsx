@@ -1,11 +1,40 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format, parseISO, differenceInCalendarDays, startOfDay, formatDistanceToNow } from 'date-fns';
+import { format, parseISO, differenceInCalendarDays, startOfDay, formatDistanceToNow, addDays } from 'date-fns';
 import { computeStreak, isLoggedToday, getMilestone } from '../lib/streak';
 import QuickLogCard from '../components/dashboard/QuickLogCard';
 import LogEntryModal from '../components/tracker/LogEntryModal';
 import api from '../lib/api';
 import './Dashboard.css';
+
+function buildMonthlyRecap(trackers, entriesMap45, crafts) {
+  const now = new Date();
+  const lmYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+  const lmMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+  const daysInLm = new Date(lmYear, lmMonth + 1, 0).getDate();
+
+  const trackerStats = trackers.map(t => {
+    const entries = (entriesMap45[t.id] || []).filter(e => {
+      const d = parseISO(e.logged_at);
+      return d.getFullYear() === lmYear && d.getMonth() === lmMonth;
+    });
+    const uniqueDays = new Set(entries.map(e => parseISO(e.logged_at).getDate())).size;
+    const pct = Math.round((uniqueDays / daysInLm) * 100);
+    return { tracker: t, uniqueDays, pct };
+  }).filter(s => s.uniqueDays > 0);
+
+  const lmName = new Date(lmYear, lmMonth).toLocaleString('default', { month: 'long' });
+
+  const completedCrafts = crafts.filter(c => {
+    if (c.status !== 'completed') return false;
+    const d = parseISO(c.completed_at || c.created_at);
+    return d.getFullYear() === lmYear && d.getMonth() === lmMonth;
+  });
+
+  const wishlistCrafts = crafts.filter(c => c.status === 'wishlist');
+
+  return { trackerStats, lmName, completedCrafts, wishlistCrafts, daysInLm };
+}
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -93,7 +122,10 @@ function formatEntryValue(entry, tracker) {
     return labels[entry.value] ?? entry.value;
   }
   if (tracker.type === 'boolean') return entry.value === '1' ? 'logged ✓' : 'skipped';
-  if (tracker.type === 'scale') return `${entry.value}/10`;
+  if (tracker.type === 'scale') {
+    const max = tracker.tracker_subtype === 'poop' ? 7 : 10;
+    return `${entry.value}/${max}`;
+  }
   return entry.value || '—';
 }
 
@@ -107,6 +139,11 @@ export default function Dashboard() {
   const [crafts, setCrafts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [logTarget, setLogTarget] = useState(null);
+  const [entriesMap45, setEntriesMap45] = useState({});
+
+  const today = new Date();
+  const dayOfMonth = today.getDate();
+  const showRecap = dayOfMonth >= 1 && dayOfMonth <= 5;
 
   const loadData = useCallback(async () => {
     const [{ data: ts }, { data: cs }, { data: cr }] = await Promise.all([
@@ -122,19 +159,22 @@ export default function Dashboard() {
       ts.map(t => api.get(`/trackers/${t.id}/entries?days=14`).then(r => [t.id, r.data]))
     );
     setEntriesMap(Object.fromEntries(results));
+
+    // Load 45-day window for monthly recap (only on days 1-5)
+    if (dayOfMonth >= 1 && dayOfMonth <= 5) {
+      const results45 = await Promise.all(
+        ts.map(t => api.get(`/trackers/${t.id}/entries?days=45`).then(r => [t.id, r.data]))
+      );
+      setEntriesMap45(Object.fromEntries(results45));
+    }
+
     setLoading(false);
-  }, []);
+  }, [dayOfMonth]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  async function handleQuickLog(tracker) {
-    if (tracker.type === 'boolean') {
-      await api.post(`/trackers/${tracker.id}/entries`, { value: '1' });
-      const { data } = await api.get(`/trackers/${tracker.id}/entries?days=14`);
-      setEntriesMap(m => ({ ...m, [tracker.id]: data }));
-    } else {
-      setLogTarget(tracker);
-    }
+  function handleQuickLog(tracker) {
+    setLogTarget(tracker);
   }
 
   async function handleLog(tracker, entryData) {
@@ -240,6 +280,80 @@ export default function Dashboard() {
             </div>
           </section>
         )}
+
+        {/* Upcoming craft deadlines */}
+        {!loading && (() => {
+          const upcoming = crafts
+            .filter(c => c.deadline_date && c.status !== 'completed')
+            .map(c => ({ ...c, daysLeft: differenceInCalendarDays(parseISO(c.deadline_date), new Date()) }))
+            .filter(c => c.daysLeft <= 30)
+            .sort((a, b) => a.daysLeft - b.daysLeft)
+            .slice(0, 5);
+          if (!upcoming.length) return null;
+          return (
+            <section className="dash-section">
+              <div className="section-label">upcoming deadlines</div>
+              <div className="birthday-list">
+                {upcoming.map(c => (
+                  <div key={c.id} className="birthday-row">
+                    <div className="birthday-info">
+                      <span className="birthday-name">✂️ {c.title}</span>
+                      {c.deadline_label && <span className="birthday-date">{c.deadline_label}</span>}
+                    </div>
+                    <span className={`birthday-countdown ${c.daysLeft <= 0 ? 'today' : c.daysLeft <= 7 ? 'soon' : ''}`}>
+                      {c.daysLeft < 0 ? 'overdue' : c.daysLeft === 0 ? '🗓 today!' : `in ${c.daysLeft}d`}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })()}
+
+        {/* Monthly recap card */}
+        {!loading && showRecap && (() => {
+          const recap = buildMonthlyRecap(trackers, entriesMap45, crafts);
+          if (!recap.trackerStats.length && !recap.completedCrafts.length) return null;
+          return (
+            <section className="dash-section">
+              <div className="section-label">📅 {recap.lmName} recap</div>
+              <div className="recap-card">
+                {recap.trackerStats.length > 0 && (
+                  <div className="recap-trackers">
+                    {recap.trackerStats.map(({ tracker, uniqueDays, pct }) => (
+                      <div key={tracker.id} className="recap-tracker-row">
+                        <span className="recap-tracker-emoji">{tracker.emoji}</span>
+                        <span className="recap-tracker-name">{tracker.name}</span>
+                        <span className="recap-tracker-stat">{uniqueDays}/{recap.daysInLm}d · {pct}%</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {recap.completedCrafts.length > 0 && (
+                  <div className="recap-crafts">
+                    <div className="recap-section-label">completed crafts</div>
+                    {recap.completedCrafts.map(c => (
+                      <div key={c.id} className="recap-craft-row">✂️ {c.title}</div>
+                    ))}
+                  </div>
+                )}
+                {recap.wishlistCrafts.length > 0 && (
+                  <div className="recap-crafts">
+                    <div className="recap-section-label">still on the wishlist</div>
+                    {recap.wishlistCrafts.slice(0, 3).map(c => (
+                      <div key={c.id} className="recap-craft-row">
+                        ★ {c.title}
+                        {c.materials?.some(m => m.status === 'need') && (
+                          <span className="recap-buy-hint"> · 🛒 {c.materials.filter(m => m.status === 'need').length} to buy</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+          );
+        })()}
 
         {/* Activity feed */}
         {!loading && (

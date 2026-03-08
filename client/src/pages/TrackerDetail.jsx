@@ -128,7 +128,10 @@ export default function TrackerDetail() {
 
   function formatValue(entry) {
     if (tracker.type === 'boolean') return entry.value === '1' ? 'yes ✓' : 'no ✗';
-    if (tracker.type === 'scale') return `${entry.value}/10`;
+    if (tracker.type === 'scale') {
+      const max = tracker.tracker_subtype === 'poop' ? 7 : 10;
+      return `${entry.value}/${max}`;
+    }
     return entry.value || '—';
   }
 

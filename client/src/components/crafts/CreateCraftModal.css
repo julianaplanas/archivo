@@ -138,6 +138,134 @@
   padding: 8px 14px;
 }
 
+.url-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.url-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.url-row input {
+  flex: 1;
+}
+
+.url-remove-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.url-remove-btn:hover {
+  color: var(--accent-red);
+  border-color: color-mix(in srgb, var(--accent-red) 40%, transparent);
+}
+
+.cf-fetch-error {
+  font-size: 12px;
+  color: var(--accent-red);
+  margin-top: 4px;
+}
+
+.deadline-row {
+  display: flex;
+  gap: 8px;
+}
+
+.deadline-date {
+  flex-shrink: 0;
+  width: 150px;
+}
+
+.deadline-label {
+  flex: 1;
+}
+
+/* Materials list */
+.mat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mat-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.mat-name {
+  flex: 2;
+}
+
+.mat-qty {
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.mat-unit {
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.mat-status-btn {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.mat-status-btn.have {
+  border-color: color-mix(in srgb, #34d399 40%, transparent);
+  color: #34d399;
+  background: color-mix(in srgb, #34d399 8%, transparent);
+}
+
+.mat-status-btn.need {
+  border-color: color-mix(in srgb, var(--accent-yellow) 40%, transparent);
+  color: var(--accent-yellow);
+  background: color-mix(in srgb, var(--accent-yellow) 8%, transparent);
+}
+
+.mat-remove-btn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.mat-remove-btn:hover { color: var(--accent-red); }
+
 .cf-error {
   font-size: 12px;
   color: var(--accent-red);

@@ -128,6 +128,42 @@ addColumn('crafts', 'for_person', 'TEXT');
 addColumn('trackers', 'frequency', 'TEXT NOT NULL DEFAULT "daily_once"');
 addColumn('trackers', 'tracker_subtype', 'TEXT');
 addColumn('tracker_entries', 'entry_metadata', 'TEXT');
+// Round 3 migrations
+addColumn('crafts', 'deadline_date', 'TEXT');
+addColumn('crafts', 'deadline_label', 'TEXT');
+addColumn('crafts', 'source_urls', 'TEXT');
+
+// craft_material_items: standalone materials per craft (no global materials dependency)
+try {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS craft_material_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      craft_id INTEGER NOT NULL REFERENCES crafts(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      quantity REAL,
+      unit TEXT,
+      status TEXT NOT NULL DEFAULT 'need' CHECK(status IN ('have', 'need')),
+      purchased INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+} catch {}
+
+// books table
+try {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS books (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      author TEXT,
+      status TEXT NOT NULL DEFAULT 'want_to_read' CHECK(status IN ('read', 'want_to_read', 'reading')),
+      rating INTEGER,
+      comment TEXT,
+      date_finished TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+} catch {}
 
 // Auto-create admin user from env vars if no users exist
 if (process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {

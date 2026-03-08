@@ -1,0 +1,124 @@
+.abm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.abm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.abm-field label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.abm-autocomplete-wrap {
+  position: relative;
+}
+
+.abm-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  z-index: 10;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.abm-suggestion-loading {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 10px 14px;
+}
+
+.abm-suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.abm-suggestion:last-child { border-bottom: none; }
+.abm-suggestion:hover { background: var(--surface-2); }
+
+.abm-sug-title {
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.abm-sug-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.abm-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.abm-status-btn {
+  padding: 10px 6px;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.abm-status-btn.active {
+  border-color: var(--accent-yellow);
+  background: color-mix(in srgb, var(--accent-yellow) 10%, transparent);
+  color: var(--accent-yellow);
+}
+
+.abm-stars {
+  display: flex;
+  gap: 4px;
+}
+
+.abm-star {
+  font-size: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--border);
+  line-height: 1;
+  transition: color 0.1s;
+}
+
+.abm-star.filled { color: var(--accent-yellow); }
+.abm-star:hover { color: var(--accent-yellow); }
+
+.abm-error {
+  font-size: 12px;
+  color: var(--accent-red);
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--accent-red) 10%, transparent);
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 20%, transparent);
+}
