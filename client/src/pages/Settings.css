@@ -63,8 +63,8 @@
 }
 
 .badge-active {
-  background: color-mix(in srgb, var(--accent-lime) 15%, transparent);
-  color: var(--accent-lime);
+  background: color-mix(in srgb, var(--accent-yellow) 15%, transparent);
+  color: var(--accent-yellow);
 }
 
 .badge-off {
@@ -100,14 +100,14 @@
 }
 
 .settings-btn-primary {
-  background: var(--accent-lime);
+  background: var(--accent-yellow);
   color: #0d0d0d;
 }
 
 .settings-btn-danger {
-  background: color-mix(in srgb, var(--accent-coral) 20%, var(--surface-2));
-  color: var(--accent-coral);
-  border: 1px solid color-mix(in srgb, var(--accent-coral) 30%, transparent);
+  background: color-mix(in srgb, var(--accent-red) 20%, var(--surface-2));
+  color: var(--accent-red);
+  border: 1px solid color-mix(in srgb, var(--accent-red) 30%, transparent);
 }
 
 .settings-btn-secondary {

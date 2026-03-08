@@ -57,7 +57,7 @@
 .streak-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-top: 3px solid var(--accent, var(--accent-lime));
+  border-top: 3px solid var(--accent, var(--accent-yellow));
   border-radius: var(--radius);
   padding: 24px;
   display: flex;
@@ -84,8 +84,8 @@
 
 .milestone-badge {
   background: rgba(200, 241, 53, 0.15);
-  border: 1px solid var(--accent-lime);
-  color: var(--accent-lime);
+  border: 1px solid var(--accent-yellow);
+  color: var(--accent-yellow);
   font-size: 13px;
   padding: 6px 14px;
   border-radius: 20px;
@@ -100,7 +100,7 @@
 }
 
 .today-status.logged {
-  color: var(--accent-lime);
+  color: var(--accent-yellow);
 }
 
 .stats-card {
@@ -137,8 +137,8 @@
   color: var(--text);
 }
 
-.stat-num.up { color: var(--accent-lime); }
-.stat-num.down { color: var(--accent-coral); }
+.stat-num.up { color: var(--accent-yellow); }
+.stat-num.down { color: var(--accent-red); }
 
 .stat-label {
   font-size: 10px;
@@ -234,7 +234,7 @@
 }
 
 .entry-action-btn:hover { color: var(--text); }
-.entry-action-btn.danger:hover { color: var(--accent-coral); }
+.entry-action-btn.danger:hover { color: var(--accent-red); }
 
 .danger-zone {
   margin-top: 32px;
@@ -246,7 +246,7 @@
 }
 
 .btn.danger {
-  color: var(--accent-coral);
+  color: var(--accent-red);
   border-color: rgba(255, 107, 74, 0.3);
   width: 100%;
 }

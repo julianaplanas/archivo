@@ -3,12 +3,11 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: var(--tab-height);
+  height: calc(var(--tab-height) + env(safe-area-inset-bottom, 0px));
   background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex;
   align-items: stretch;
-  padding-bottom: env(safe-area-inset-bottom, 0);
   z-index: 100;
 }
 
@@ -19,13 +18,14 @@
   align-items: center;
   justify-content: center;
   gap: 3px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   color: var(--text-muted);
   transition: color 0.15s;
   text-decoration: none;
 }
 
 .tab-item.active {
-  color: var(--accent-lime);
+  color: var(--accent-yellow);
 }
 
 .tab-icon {

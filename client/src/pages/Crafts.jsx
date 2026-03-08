@@ -4,47 +4,42 @@ import CreateCraftModal from '../components/crafts/CreateCraftModal';
 import api from '../lib/api';
 import './Crafts.css';
 
-const TABS = [
-  { key: 'wishlist',   label: '★ wishlist' },
-  { key: 'completed',  label: '✓ completed' },
+const FILTERS = [
+  { key: 'all',       label: 'all' },
+  { key: 'wishlist',  label: '★ wishlist' },
+  { key: 'completed', label: '✓ done' },
 ];
 
-const EMPTY = {
-  wishlist:  { art: '[ wishlist empty ]', sub: 'add a craft you want to make' },
-  completed: { art: '[ nothing yet ]',    sub: 'complete a wishlist item to see it here' },
-};
-
 export default function Crafts() {
-  const [tab, setTab] = useState('wishlist');
+  const [filter, setFilter] = useState('all');
   const [crafts, setCrafts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
 
-  const loadCrafts = useCallback(async (status = tab) => {
+  const loadCrafts = useCallback(async () => {
     setLoading(true);
-    const { data } = await api.get(`/crafts?status=${status}`);
+    const params = filter !== 'all' ? `?status=${filter}` : '';
+    const { data } = await api.get(`/crafts${params}`);
     setCrafts(data);
     setLoading(false);
-  }, [tab]);
+  }, [filter]);
 
-  useEffect(() => { loadCrafts(tab); }, [tab]);
+  useEffect(() => { loadCrafts(); }, [loadCrafts]);
 
   async function handleComplete(craft) {
-    await api.put(`/crafts/${craft.id}`, {
-      status: 'completed',
-      completed_at: new Date().toISOString(),
-    });
-    setCrafts(cs => cs.filter(c => c.id !== craft.id));
+    await api.put(`/crafts/${craft.id}`, { status: 'completed' });
+    setCrafts(cs => cs.map(c => c.id === craft.id ? { ...c, status: 'completed' } : c));
+  }
+
+  async function handleUncomplete(craft) {
+    await api.put(`/crafts/${craft.id}`, { status: 'wishlist' });
+    setCrafts(cs => cs.map(c => c.id === craft.id ? { ...c, status: 'wishlist' } : c));
   }
 
   async function handleDelete(id) {
     await api.delete(`/crafts/${id}`);
     setCrafts(cs => cs.filter(c => c.id !== id));
-  }
-
-  function handleEdit(craft) {
-    setEditTarget(craft);
   }
 
   return (
@@ -56,15 +51,14 @@ export default function Crafts() {
         </button>
       </div>
 
-      {/* Tab bar */}
-      <div className="crafts-tabs">
-        {TABS.map(t => (
+      <div className="crafts-filters">
+        {FILTERS.map(f => (
           <button
-            key={t.key}
-            className={`craft-tab ${tab === t.key ? 'active' : ''}`}
-            onClick={() => setTab(t.key)}
+            key={f.key}
+            className={`craft-filter-chip ${filter === f.key ? 'active' : ''}`}
+            onClick={() => setFilter(f.key)}
           >
-            {t.label}
+            {f.label}
           </button>
         ))}
       </div>
@@ -74,9 +68,11 @@ export default function Crafts() {
           <div className="crafts-loading">loading...</div>
         ) : crafts.length === 0 ? (
           <div className="crafts-empty">
-            <div className="crafts-empty-art">{EMPTY[tab].art}</div>
-            <div className="crafts-empty-sub">{EMPTY[tab].sub}</div>
-            {tab === 'wishlist' && (
+            <div className="crafts-empty-art">{'[ nothing here yet ]'}</div>
+            <div className="crafts-empty-sub">
+              {filter === 'completed' ? 'complete a craft to see it here' : 'add a craft you want to make'}
+            </div>
+            {filter !== 'completed' && (
               <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
                 add first craft →
               </button>
@@ -89,7 +85,8 @@ export default function Crafts() {
                 key={craft.id}
                 craft={craft}
                 onComplete={handleComplete}
-                onEdit={handleEdit}
+                onUncomplete={handleUncomplete}
+                onEdit={c => setEditTarget(c)}
                 onDelete={handleDelete}
                 style={{ animationDelay: `${i * 0.05}s` }}
               />
@@ -100,7 +97,7 @@ export default function Crafts() {
 
       {showCreate && (
         <CreateCraftModal
-          onSave={() => loadCrafts(tab)}
+          onSave={loadCrafts}
           onClose={() => setShowCreate(false)}
         />
       )}
@@ -108,7 +105,7 @@ export default function Crafts() {
       {editTarget && (
         <CreateCraftModal
           existing={editTarget}
-          onSave={() => { loadCrafts(tab); setEditTarget(null); }}
+          onSave={() => { loadCrafts(); setEditTarget(null); }}
           onClose={() => setEditTarget(null)}
         />
       )}

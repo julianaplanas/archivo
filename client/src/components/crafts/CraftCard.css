@@ -7,7 +7,7 @@
 }
 
 .craft-card.completed {
-  border-color: color-mix(in srgb, var(--accent-lime) 25%, var(--border));
+  border-color: color-mix(in srgb, var(--accent-yellow) 25%, var(--border));
 }
 
 .craft-card-img {
@@ -38,11 +38,38 @@
   gap: 10px;
 }
 
+.craft-title-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .craft-title {
   font-size: 16px;
   font-weight: 600;
   color: var(--text);
   line-height: 1.3;
+}
+
+.craft-completed-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-yellow);
+  background: color-mix(in srgb, var(--accent-yellow) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-yellow) 30%, transparent);
+  border-radius: 20px;
+  padding: 2px 8px;
+  align-self: flex-start;
+}
+
+.craft-for-person {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-blue);
+  letter-spacing: 0.03em;
 }
 
 .craft-card-actions {
@@ -64,7 +91,7 @@
 }
 
 .craft-action-btn:hover { color: var(--text); }
-.craft-action-btn.danger:hover { color: var(--accent-coral); }
+.craft-action-btn.danger:hover { color: var(--accent-red); }
 
 .craft-tags {
   display: flex;
@@ -125,11 +152,20 @@
   padding: 8px 16px !important;
 }
 
-.craft-completed-label {
-  font-size: 11px;
+.craft-uncomplete-btn {
   font-family: var(--font-mono);
-  color: var(--accent-lime);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
   letter-spacing: 0.04em;
+  transition: color 0.1s;
+}
+
+.craft-uncomplete-btn:hover {
+  color: var(--accent-red);
 }
 
 @keyframes card-in {

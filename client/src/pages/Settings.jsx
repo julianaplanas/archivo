@@ -173,10 +173,17 @@ export default function Settings() {
             <span className="settings-label">storage</span>
             <span className="settings-value">sqlite · railway volume</span>
           </div>
-          <div className="settings-row" style={{ border: 'none' }}>
+          <div className="settings-row">
             <span className="settings-label">ai</span>
             <span className="settings-value">openrouter</span>
           </div>
+          <div className="settings-row" style={{ border: 'none' }}>
+            <span className="settings-label">data</span>
+            <span className="settings-value">railway volume</span>
+          </div>
+          <p className="settings-hint" style={{ marginTop: 8 }}>
+            data stored on railway volume — survives redeployments.
+          </p>
         </section>
       </div>
     </div>

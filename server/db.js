@@ -35,7 +35,7 @@ db.exec(`
     goal_unit TEXT,
     notifications_enabled INTEGER NOT NULL DEFAULT 0,
     notification_time TEXT,
-    color TEXT NOT NULL DEFAULT '#4af0e4',
+    color TEXT NOT NULL DEFAULT '#2563eb',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -118,6 +118,14 @@ db.exec(`
   );
 `);
 
+// Migrations — safe ALTER TABLE ADD COLUMN (SQLite throws if column exists, we ignore)
+function addColumn(table, col, definition) {
+  try { db.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${definition}`); } catch {}
+}
+addColumn('trackers', 'max_entries_per_day', 'INTEGER NOT NULL DEFAULT 1');
+addColumn('trackers', 'notification_times', 'TEXT');
+addColumn('crafts', 'for_person', 'TEXT');
+
 // Seed sample trackers if none exist
 const trackerCount = db.prepare('SELECT COUNT(*) as count FROM trackers').get();
 if (trackerCount.count === 0) {
@@ -126,9 +134,9 @@ if (trackerCount.count === 0) {
     VALUES (@name, @emoji, @type, @mode, @color)
   `);
   const seedTrackers = db.transaction(() => {
-    insertTracker.run({ name: 'Gym', emoji: '💪', type: 'boolean', mode: 'do_it', color: '#c8f135' });
-    insertTracker.run({ name: 'Sugar', emoji: '🍬', type: 'boolean', mode: 'quit', color: '#ff6b4a' });
-    insertTracker.run({ name: 'Daily Meds', emoji: '💊', type: 'boolean', mode: 'do_it', color: '#4af0e4' });
+    insertTracker.run({ name: 'Gym', emoji: '💪', type: 'boolean', mode: 'do_it', color: '#f5c400' });
+    insertTracker.run({ name: 'Sugar', emoji: '🍬', type: 'boolean', mode: 'quit', color: '#d93f2e' });
+    insertTracker.run({ name: 'Daily Meds', emoji: '💊', type: 'boolean', mode: 'do_it', color: '#2563eb' });
   });
   seedTrackers();
   console.log('[db] Seeded sample trackers');

@@ -35,9 +35,9 @@
 }
 
 .preset-chip.active {
-  border-color: var(--accent-lime);
+  border-color: var(--accent-yellow);
   background: rgba(200, 241, 53, 0.1);
-  color: var(--accent-lime);
+  color: var(--accent-yellow);
 }
 
 .create-form {
@@ -79,6 +79,10 @@
   grid-template-columns: 1fr 1fr 1fr;
 }
 
+.option-grid.cols-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
 .option-btn {
   padding: 10px 8px;
   border-radius: var(--radius);
@@ -94,9 +98,9 @@
 }
 
 .option-btn.active {
-  border-color: var(--accent-lime);
+  border-color: var(--accent-yellow);
   background: rgba(200, 241, 53, 0.1);
-  color: var(--accent-lime);
+  color: var(--accent-yellow);
 }
 
 .color-row {
@@ -159,17 +163,17 @@
 
 .toggle.on {
   background: rgba(200, 241, 53, 0.2);
-  border-color: var(--accent-lime);
+  border-color: var(--accent-yellow);
 }
 
 .toggle.on::after {
   transform: translateX(20px);
-  background: var(--accent-lime);
+  background: var(--accent-yellow);
 }
 
 .form-error {
   font-size: 12px;
-  color: var(--accent-coral);
+  color: var(--accent-red);
   padding: 8px 12px;
   background: rgba(255, 107, 74, 0.1);
   border-radius: var(--radius);

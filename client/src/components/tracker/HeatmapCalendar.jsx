@@ -5,24 +5,24 @@ import {
 } from 'date-fns';
 import './HeatmapCalendar.css';
 
-// lime (#c8f135 = 200,241,53) → coral (#ff6b4a = 255,107,74)
+// yellow (#f5c400 = 245,196,0) → red (#d93f2e = 217,63,46)
 function lerp(t) {
-  const r = Math.round(200 + (255 - 200) * t);
-  const g = Math.round(241 + (107 - 241) * t);
-  const b = Math.round(53  + (74  - 53)  * t);
+  const r = Math.round(245 + (217 - 245) * t);
+  const g = Math.round(196 + (63  - 196) * t);
+  const b = Math.round(0   + (46  - 0)   * t);
   return `rgb(${r},${g},${b})`;
 }
 
 function cellColor(dayEntries, tracker) {
   if (!dayEntries.length) {
-    // quit mode: clean day gets a very subtle lime wash
-    return tracker.mode === 'quit' ? 'rgba(200,241,53,0.18)' : null;
+    // quit mode: clean day gets a very subtle yellow wash
+    return tracker.mode === 'quit' ? 'rgba(245,196,0,0.18)' : null;
   }
   switch (tracker.type) {
     case 'boolean': {
       const did = dayEntries.some(e => e.value === '1');
-      if (tracker.mode === 'quit') return did ? '#ff6b4a' : 'rgba(200,241,53,0.28)';
-      return did ? '#c8f135' : null;
+      if (tracker.mode === 'quit') return did ? '#d93f2e' : 'rgba(245,196,0,0.28)';
+      return did ? '#f5c400' : null;
     }
     case 'scale': {
       const val = Math.max(...dayEntries.map(e => parseInt(e.value) || 0));
@@ -33,7 +33,7 @@ function cellColor(dayEntries, tracker) {
       const max = tracker.goal_value ? Number(tracker.goal_value) : Math.max(total, 1);
       return lerp(Math.min(total / max, 1));
     }
-    default: return '#c8f135';
+    default: return '#f5c400';
   }
 }
 

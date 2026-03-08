@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { startOfDay, parseISO } from 'date-fns';
 import { isLoggedToday, computeStreak } from '../../lib/streak';
 import './TrackerCard.css';
 
@@ -15,14 +16,24 @@ const STREAK_LABELS = {
   track_only: 'day streak',
 };
 
-export default function TrackerCard({ tracker, entries = [], onQuickLog }) {
+export default function TrackerCard({ tracker, entries = [], onQuickLog, onToggleOff }) {
   const navigate = useNavigate();
   const logged = isLoggedToday(entries);
   const streak = computeStreak(entries, tracker);
 
+  function getTodayEntry() {
+    const today = startOfDay(new Date()).toDateString();
+    return entries.find(e => startOfDay(parseISO(e.logged_at)).toDateString() === today);
+  }
+
   function handleLog(e) {
     e.stopPropagation();
-    onQuickLog(tracker, tracker.type === 'boolean' ? 'immediate' : 'modal');
+    if (logged && tracker.type === 'boolean' && onToggleOff) {
+      const entry = getTodayEntry();
+      if (entry) onToggleOff(tracker, entry);
+    } else {
+      onQuickLog(tracker, tracker.type === 'boolean' ? 'immediate' : 'modal');
+    }
   }
 
   return (
@@ -56,7 +67,8 @@ export default function TrackerCard({ tracker, entries = [], onQuickLog }) {
         <button
           className={`quick-log-btn ${logged ? 'logged' : ''}`}
           onClick={handleLog}
-          aria-label={logged ? 'logged today' : 'log now'}
+          aria-label={logged ? 'logged today — tap to undo' : 'log now'}
+          title={logged && tracker.type === 'boolean' ? 'tap to undo' : undefined}
         >
           {logged ? '✓' : '+'}
         </button>

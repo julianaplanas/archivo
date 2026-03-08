@@ -119,20 +119,20 @@
 }
 
 .quick-log-btn.logged {
-  background: var(--card-accent, var(--accent-lime));
-  border-color: var(--card-accent, var(--accent-lime));
+  background: var(--card-accent, var(--accent-yellow));
+  border-color: var(--card-accent, var(--accent-yellow));
   color: #0d0d0d;
 }
 
 .quick-log-btn:not(.logged):active {
-  background: var(--card-accent, var(--accent-lime));
-  border-color: var(--card-accent, var(--accent-lime));
+  background: var(--card-accent, var(--accent-yellow));
+  border-color: var(--card-accent, var(--accent-yellow));
   color: #0d0d0d;
   transform: scale(0.9);
 }
 
 .tracker-card.logged {
-  border-color: color-mix(in srgb, var(--card-accent, var(--accent-lime)) 30%, var(--border));
+  border-color: color-mix(in srgb, var(--card-accent, var(--accent-yellow)) 30%, var(--border));
 }
 
 @keyframes card-in {

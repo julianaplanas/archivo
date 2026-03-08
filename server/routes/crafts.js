@@ -32,12 +32,12 @@ router.get('/', (req, res) => {
 
 // POST /api/crafts
 router.post('/', upload.array('images', 10), (req, res) => {
-  const { title, status = 'wishlist', description, source_url, og_title, og_image, tags } = req.body;
+  const { title, status = 'wishlist', description, source_url, og_title, og_image, tags, for_person } = req.body;
   if (!title) return res.status(400).json({ error: 'title required' });
   const result = db.prepare(`
-    INSERT INTO crafts (title, status, description, source_url, og_title, og_image)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run(title, status, description ?? null, source_url ?? null, og_title ?? null, og_image ?? null);
+    INSERT INTO crafts (title, status, description, source_url, og_title, og_image, for_person)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(title, status, description ?? null, source_url ?? null, og_title ?? null, og_image ?? null, for_person ?? null);
   const id = result.lastInsertRowid;
 
   if (tags) {
@@ -74,9 +74,9 @@ router.get('/:id', (req, res) => {
 router.put('/:id', (req, res) => {
   const craft = db.prepare('SELECT * FROM crafts WHERE id = ?').get(req.params.id);
   if (!craft) return res.status(404).json({ error: 'Not found' });
-  const { title, status, description, source_url, og_title, og_image, completed_at, tags } = req.body;
+  const { title, status, description, source_url, og_title, og_image, completed_at, tags, for_person } = req.body;
   db.prepare(`
-    UPDATE crafts SET title=?, status=?, description=?, source_url=?, og_title=?, og_image=?, completed_at=?
+    UPDATE crafts SET title=?, status=?, description=?, source_url=?, og_title=?, og_image=?, completed_at=?, for_person=?
     WHERE id=?
   `).run(
     title ?? craft.title,
@@ -86,6 +86,7 @@ router.put('/:id', (req, res) => {
     og_title !== undefined ? og_title : craft.og_title,
     og_image !== undefined ? og_image : craft.og_image,
     completed_at !== undefined ? completed_at : craft.completed_at,
+    for_person !== undefined ? for_person : craft.for_person,
     req.params.id
   );
   if (tags !== undefined) {

@@ -72,7 +72,7 @@ export default function TrackerDetail() {
           particleCount: 120,
           spread: 80,
           origin: { y: 0.55 },
-          colors: ['#c8f135', '#ff6b4a', '#4af0e4', '#f0ece0'],
+          colors: ['#f5c400', '#d93f2e', '#2563eb', '#f0ece0'],
         });
       }
     }

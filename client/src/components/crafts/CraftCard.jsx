@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { format, parseISO } from 'date-fns';
 import './CraftCard.css';
 
-export default function CraftCard({ craft, onComplete, onEdit, onDelete }) {
+export default function CraftCard({ craft, onComplete, onUncomplete, onEdit, onDelete }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const imageUrl = craft.images?.[0]?.filepath
@@ -21,7 +20,10 @@ export default function CraftCard({ craft, onComplete, onEdit, onDelete }) {
 
       <div className="craft-card-body">
         <div className="craft-card-top">
-          <span className="craft-title">{craft.title}</span>
+          <div className="craft-title-row">
+            <span className="craft-title">{craft.title}</span>
+            {isCompleted && <span className="craft-completed-badge">completed ✓</span>}
+          </div>
           <div className="craft-card-actions">
             <button className="craft-action-btn" onClick={() => onEdit(craft)}>✎</button>
             {confirmDelete ? (
@@ -34,6 +36,10 @@ export default function CraftCard({ craft, onComplete, onEdit, onDelete }) {
             )}
           </div>
         </div>
+
+        {craft.for_person && (
+          <div className="craft-for-person">for {craft.for_person}</div>
+        )}
 
         {craft.tags?.length > 0 && (
           <div className="craft-tags">
@@ -55,15 +61,15 @@ export default function CraftCard({ craft, onComplete, onEdit, onDelete }) {
             rel="noopener noreferrer"
             onClick={e => e.stopPropagation()}
           >
-            {craft.og_title || new URL(craft.source_url).hostname}  ↗
+            {craft.og_title || new URL(craft.source_url).hostname} ↗
           </a>
         )}
 
         <div className="craft-footer">
-          {isCompleted && craft.completed_at ? (
-            <span className="craft-completed-label">
-              ✓ completed {format(parseISO(craft.completed_at), 'MMM d, yyyy')}
-            </span>
+          {isCompleted ? (
+            <button className="craft-uncomplete-btn" onClick={() => onUncomplete(craft)}>
+              undo ✕
+            </button>
           ) : (
             <button className="btn btn-primary craft-complete-btn" onClick={() => onComplete(craft)}>
               mark complete ✓

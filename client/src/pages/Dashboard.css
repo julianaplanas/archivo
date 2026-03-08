@@ -181,12 +181,12 @@
 }
 
 .birthday-countdown.today {
-  color: var(--accent-coral);
+  color: var(--accent-red);
   font-weight: 600;
 }
 
 .birthday-countdown.soon {
-  color: var(--accent-lime);
+  color: var(--accent-yellow);
 }
 
 .craft-ideas-btn {
@@ -215,8 +215,8 @@
 }
 
 .dash-empty:hover {
-  border-color: var(--accent-lime);
-  color: var(--accent-lime);
+  border-color: var(--accent-yellow);
+  color: var(--accent-yellow);
 }
 
 .dash-empty-art {

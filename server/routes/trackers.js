@@ -10,12 +10,12 @@ router.get('/', (req, res) => {
 
 // POST /api/trackers
 router.post('/', (req, res) => {
-  const { name, emoji = '📌', type, mode, goal_value, goal_unit, notifications_enabled = 0, notification_time, color = '#4af0e4' } = req.body;
+  const { name, emoji = '📌', type, mode, goal_value, goal_unit, notifications_enabled = 0, notification_time, notification_times, color = '#2563eb', max_entries_per_day = 1 } = req.body;
   if (!name || !type || !mode) return res.status(400).json({ error: 'name, type, mode required' });
   const result = db.prepare(`
-    INSERT INTO trackers (name, emoji, type, mode, goal_value, goal_unit, notifications_enabled, notification_time, color)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(name, emoji, type, mode, goal_value ?? null, goal_unit ?? null, notifications_enabled ? 1 : 0, notification_time ?? null, color);
+    INSERT INTO trackers (name, emoji, type, mode, goal_value, goal_unit, notifications_enabled, notification_time, notification_times, color, max_entries_per_day)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(name, emoji, type, mode, goal_value ?? null, goal_unit ?? null, notifications_enabled ? 1 : 0, notification_time ?? null, notification_times ?? null, color, max_entries_per_day ?? 1);
   res.status(201).json(db.prepare('SELECT * FROM trackers WHERE id = ?').get(result.lastInsertRowid));
 });
 
@@ -30,12 +30,12 @@ router.get('/:id', (req, res) => {
 router.put('/:id', (req, res) => {
   const tracker = db.prepare('SELECT * FROM trackers WHERE id = ?').get(req.params.id);
   if (!tracker) return res.status(404).json({ error: 'Not found' });
-  const { name, emoji, type, mode, goal_value, goal_unit, notifications_enabled, notification_time, color } = req.body;
+  const { name, emoji, type, mode, goal_value, goal_unit, notifications_enabled, notification_time, notification_times, color, max_entries_per_day } = req.body;
   db.prepare(`
     UPDATE trackers SET
       name = ?, emoji = ?, type = ?, mode = ?,
       goal_value = ?, goal_unit = ?, notifications_enabled = ?,
-      notification_time = ?, color = ?
+      notification_time = ?, notification_times = ?, color = ?, max_entries_per_day = ?
     WHERE id = ?
   `).run(
     name ?? tracker.name,
@@ -46,7 +46,9 @@ router.put('/:id', (req, res) => {
     goal_unit !== undefined ? goal_unit : tracker.goal_unit,
     notifications_enabled !== undefined ? (notifications_enabled ? 1 : 0) : tracker.notifications_enabled,
     notification_time !== undefined ? notification_time : tracker.notification_time,
+    notification_times !== undefined ? notification_times : tracker.notification_times,
     color ?? tracker.color,
+    max_entries_per_day !== undefined ? max_entries_per_day : tracker.max_entries_per_day,
     req.params.id
   );
   res.json(db.prepare('SELECT * FROM trackers WHERE id = ?').get(req.params.id));

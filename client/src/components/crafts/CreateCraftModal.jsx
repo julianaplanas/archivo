@@ -70,6 +70,7 @@ export default function CreateCraftModal({ onSave, onClose, existing = null }) {
   const [ogTitle, setOgTitle] = useState(existing?.og_title ?? '');
   const [ogImage, setOgImage] = useState(existing?.og_image ?? '');
   const [tags, setTags] = useState(existing?.tags ?? []);
+  const [forPerson, setForPerson] = useState(existing?.for_person ?? '');
   const [existingImages, setExistingImages] = useState(existing?.images ?? []);
   const [newFiles, setNewFiles] = useState([]);
   const [fetchingOg, setFetchingOg] = useState(false);
@@ -108,7 +109,7 @@ export default function CreateCraftModal({ onSave, onClose, existing = null }) {
         // Update metadata
         await api.put(`/crafts/${existing.id}`, {
           title: title.trim(), description, source_url: sourceUrl,
-          og_title: ogTitle, og_image: ogImage, tags,
+          og_title: ogTitle, og_image: ogImage, tags, for_person: forPerson || null,
         });
         // Upload any new images
         if (newFiles.length) {
@@ -124,6 +125,7 @@ export default function CreateCraftModal({ onSave, onClose, existing = null }) {
         if (ogTitle)     fd.append('og_title', ogTitle);
         if (ogImage)     fd.append('og_image', ogImage);
         tags.forEach(t => fd.append('tags', t));
+        if (forPerson) fd.append('for_person', forPerson);
         newFiles.forEach(f => fd.append('images', f));
         await api.post('/crafts', fd);
       }
@@ -180,6 +182,16 @@ export default function CreateCraftModal({ onSave, onClose, existing = null }) {
             value={description}
             onChange={e => setDescription(e.target.value)}
             rows={3}
+          />
+        </div>
+
+        <div className="cf-field">
+          <label>for someone? (optional)</label>
+          <input
+            type="text"
+            placeholder="e.g. mum, best friend..."
+            value={forPerson}
+            onChange={e => setForPerson(e.target.value)}
           />
         </div>
 

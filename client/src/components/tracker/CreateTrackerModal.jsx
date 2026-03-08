@@ -3,17 +3,17 @@ import Modal from '../ui/Modal';
 import './CreateTrackerModal.css';
 
 const PRESETS = [
-  { name: 'Gym', emoji: '💪', type: 'boolean', mode: 'do_it', color: '#c8f135' },
-  { name: 'Sugar', emoji: '🍬', type: 'boolean', mode: 'quit', color: '#ff6b4a' },
-  { name: 'Daily Meds', emoji: '💊', type: 'boolean', mode: 'do_it', color: '#4af0e4' },
+  { name: 'Gym', emoji: '💪', type: 'boolean', mode: 'do_it', color: '#f5c400' },
+  { name: 'Sugar', emoji: '🍬', type: 'boolean', mode: 'quit', color: '#d93f2e' },
+  { name: 'Daily Meds', emoji: '💊', type: 'boolean', mode: 'do_it', color: '#2563eb' },
   { name: 'Poop', emoji: '💩', type: 'boolean', mode: 'track_only', color: '#a78bfa' },
-  { name: 'Period', emoji: '🩸', type: 'boolean', mode: 'track_only', color: '#ff6b4a' },
-  { name: 'Water', emoji: '💧', type: 'quantity', mode: 'do_it', color: '#4af0e4', goal_value: 8, goal_unit: 'glasses' },
-  { name: 'Mood', emoji: '🌡', type: 'scale', mode: 'track_only', color: '#c8f135' },
+  { name: 'Period', emoji: '🩸', type: 'boolean', mode: 'track_only', color: '#d93f2e' },
+  { name: 'Water', emoji: '💧', type: 'quantity', mode: 'do_it', color: '#2563eb', goal_value: 8, goal_unit: 'glasses' },
+  { name: 'Mood', emoji: '🌡', type: 'scale', mode: 'track_only', color: '#f5c400' },
   { name: 'Journal', emoji: '📝', type: 'text', mode: 'do_it', color: '#a78bfa' },
 ];
 
-const COLORS = ['#c8f135', '#ff6b4a', '#4af0e4', '#a78bfa', '#fbbf24', '#f472b6', '#34d399', '#60a5fa'];
+const COLORS = ['#f5c400', '#d93f2e', '#2563eb', '#a78bfa', '#fbbf24', '#f472b6', '#34d399', '#60a5fa'];
 
 const BLANK = {
   name: '',
@@ -24,17 +24,19 @@ const BLANK = {
   goal_unit: '',
   notifications_enabled: false,
   notification_time: '09:00',
-  color: '#c8f135',
+  color: '#f5c400',
+  max_entries_per_day: 1,
 };
 
-export default function CreateTrackerModal({ onSave, onClose, existing = null }) {
+export default function CreateTrackerModal({ onSave, onClose, existing = null, prefilled = null }) {
   const [form, setForm] = useState(existing ? {
     ...existing,
     goal_value: existing.goal_value ?? '',
     goal_unit: existing.goal_unit ?? '',
     notification_time: existing.notification_time ?? '09:00',
     notifications_enabled: !!existing.notifications_enabled,
-  } : BLANK);
+    max_entries_per_day: existing.max_entries_per_day ?? 1,
+  } : prefilled ? { ...BLANK, ...prefilled } : BLANK);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -58,6 +60,7 @@ export default function CreateTrackerModal({ onSave, onClose, existing = null })
         goal_value: form.goal_value !== '' ? Number(form.goal_value) : null,
         goal_unit: form.goal_unit || null,
         notification_time: form.notifications_enabled ? form.notification_time : null,
+        max_entries_per_day: form.max_entries_per_day,
       });
       onClose();
     } catch {
@@ -106,7 +109,7 @@ export default function CreateTrackerModal({ onSave, onClose, existing = null })
               placeholder="e.g. Morning Run"
               value={form.name}
               onChange={e => set('name', e.target.value)}
-              autoFocus={!existing}
+              autoFocus={!existing && !prefilled}
             />
           </div>
         </div>
@@ -145,6 +148,25 @@ export default function CreateTrackerModal({ onSave, onClose, existing = null })
                 type="button"
                 className={`option-btn ${form.mode === opt.value ? 'active' : ''}`}
                 onClick={() => set('mode', opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-field">
+          <label>entries per day</label>
+          <div className="option-grid cols-2">
+            {[
+              { value: 1, label: 'once' },
+              { value: 0, label: 'multiple' },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                className={`option-btn ${form.max_entries_per_day === opt.value ? 'active' : ''}`}
+                onClick={() => set('max_entries_per_day', opt.value)}
               >
                 {opt.label}
               </button>

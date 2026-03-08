@@ -37,15 +37,15 @@
 }
 
 .bool-btn.active {
-  border-color: var(--accent-lime);
+  border-color: var(--accent-yellow);
   background: rgba(200, 241, 53, 0.12);
-  color: var(--accent-lime);
+  color: var(--accent-yellow);
 }
 
 .bool-btn.skip.active {
-  border-color: var(--accent-coral);
+  border-color: var(--accent-red);
   background: rgba(255, 107, 74, 0.12);
-  color: var(--accent-coral);
+  color: var(--accent-red);
 }
 
 .scale-grid {
