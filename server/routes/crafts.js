@@ -6,11 +6,25 @@ const { v4: uuidv4 } = require('uuid');
 const { db, UPLOADS_PATH } = require('../db');
 
 const storage = multer.diskStorage({
-  destination: UPLOADS_PATH,
+  destination: (req, file, cb) => {
+    console.log(`[upload] receiving file: ${file.originalname} (${file.mimetype}) → ${UPLOADS_PATH}`);
+    cb(null, UPLOADS_PATH);
+  },
   filename: (req, file, cb) => {
-    cb(null, `${uuidv4()}${path.extname(file.originalname)}`);
+    const name = `${uuidv4()}${path.extname(file.originalname)}`;
+    console.log(`[upload] saving as: ${name}`);
+    cb(null, name);
   },
 });
+
+function multerErrorHandler(err, req, res, next) {
+  if (err) {
+    console.error('[upload] multer error:', err.message);
+    return res.status(400).json({ error: `upload failed: ${err.message}` });
+  }
+  next();
+}
+
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 
 function attachCraftExtras(c) {
@@ -35,8 +49,9 @@ router.get('/', (req, res) => {
 });
 
 // POST /api/crafts
-router.post('/', upload.array('images', 10), (req, res) => {
+router.post('/', upload.array('images', 10), multerErrorHandler, (req, res) => {
   const { title, status = 'wishlist', description, source_url, source_urls, og_title, og_image, tags, for_person, deadline_date, deadline_label, materials } = req.body;
+  console.log(`[crafts] POST / — title="${title}", files=${req.files?.length ?? 0}`);
   if (!title) return res.status(400).json({ error: 'title required' });
 
   // Merge source_url + source_urls into canonical JSON array
@@ -60,7 +75,12 @@ router.post('/', upload.array('images', 10), (req, res) => {
 
   if (req.files?.length) {
     const insertImage = db.prepare('INSERT INTO craft_images (craft_id, filepath) VALUES (?, ?)');
-    req.files.forEach(f => insertImage.run(id, f.filename));
+    req.files.forEach(f => {
+      insertImage.run(id, f.filename);
+      console.log(`[crafts] saved image: ${f.filename} (${f.size} bytes) for craft ${id}`);
+    });
+  } else {
+    console.log(`[crafts] no files in this request`);
   }
 
   if (materials) {
@@ -139,11 +159,13 @@ router.delete('/:id', (req, res) => {
 });
 
 // POST /api/crafts/:id/images
-router.post('/:id/images', upload.array('images', 10), (req, res) => {
+router.post('/:id/images', upload.array('images', 10), multerErrorHandler, (req, res) => {
+  console.log(`[crafts] POST /${req.params.id}/images — files=${req.files?.length ?? 0}`);
   const craft = db.prepare('SELECT * FROM crafts WHERE id = ?').get(req.params.id);
   if (!craft) return res.status(404).json({ error: 'Not found' });
   const insertImage = db.prepare('INSERT INTO craft_images (craft_id, filepath, caption) VALUES (?, ?, ?)');
   const images = (req.files || []).map(f => {
+    console.log(`[crafts] saved image: ${f.filename} (${f.size} bytes) for craft ${req.params.id}`);
     const r = insertImage.run(req.params.id, f.filename, req.body.caption ?? null);
     return db.prepare('SELECT * FROM craft_images WHERE id = ?').get(r.lastInsertRowid);
   });
