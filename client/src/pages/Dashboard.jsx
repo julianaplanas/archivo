@@ -102,9 +102,9 @@ function buildFeed(trackers, entriesMap, crafts) {
     }
   }
 
-  // Recent crafts (last 14 days)
+  // Recent crafts (last 7 days)
   for (const craft of crafts) {
-    if (new Date(craft.created_at) >= Date.now() - 14 * 86_400_000) {
+    if (new Date(craft.created_at) >= Date.now() - 7 * 86_400_000) {
       items.push({ type: 'craft', craft, date: craft.created_at });
     }
   }

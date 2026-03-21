@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import Modal from '../ui/Modal';
 import './LogEntryModal.css';
 
+function toLocalInputValue(d) {
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 const SCALE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 const BRISTOL = [
@@ -157,8 +162,8 @@ export default function LogEntryModal({ tracker, onLog, onClose, existingEntry =
   const [metadata, setMetadata] = useState(defaultMetadata);
   const [loggedAt, setLoggedAt] = useState(
     existingEntry?.logged_at
-      ? existingEntry.logged_at.slice(0, 16)
-      : new Date().toISOString().slice(0, 16)
+      ? toLocalInputValue(new Date(existingEntry.logged_at))
+      : toLocalInputValue(new Date())
   );
   const [saving, setSaving] = useState(false);
 

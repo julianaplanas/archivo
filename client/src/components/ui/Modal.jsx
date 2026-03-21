@@ -13,7 +13,10 @@ export default function Modal({ title, onClose, children, fullHeight = false }) 
         className={`modal-sheet ${fullHeight ? 'full-height' : ''}`}
         onClick={e => e.stopPropagation()}
       >
-        <div className="modal-handle" />
+        <div className="modal-topbar">
+          <div className="modal-handle" />
+          <button className="modal-close-btn" onClick={onClose} aria-label="close">✕</button>
+        </div>
         {title && <div className="modal-title">{title}</div>}
         <div className="modal-body">{children}</div>
       </div>
