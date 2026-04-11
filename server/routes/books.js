@@ -1,10 +1,15 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
+const { parse } = require('csv-parse/sync');
 const router = express.Router();
 const { db } = require('../db');
 
-const CSV_PATH = process.env.GOODREADS_CSV_PATH || path.join(__dirname, '..', '..', 'goodreads_library_export.csv');
+const csvUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+
+const DATA_PATH = process.env.DATA_PATH || './data';
+const CSV_PATH = path.join(DATA_PATH, 'goodreads_library_export.csv');
 
 function escapeCsvField(val) {
   if (val == null) return '';
@@ -74,6 +79,57 @@ router.post('/', (req, res) => {
   const book = db.prepare('SELECT * FROM books WHERE id = ?').get(result.lastInsertRowid);
   appendBookToCsv(book);
   res.status(201).json(book);
+});
+
+// POST /api/books/import-csv — upload Goodreads CSV to import books
+router.post('/import-csv', csvUpload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'no file uploaded' });
+  try {
+    const records = parse(req.file.buffer.toString('utf-8'), {
+      columns: true,
+      skip_empty_lines: true,
+      relax_column_count: true,
+    });
+
+    const statusMap = { 'read': 'read', 'to-read': 'want_to_read', 'currently-reading': 'reading' };
+    const insert = db.prepare(`
+      INSERT INTO books (title, author, status, rating, comment, date_finished, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    const existing = db.prepare('SELECT id FROM books WHERE title = ? AND author = ?');
+
+    let imported = 0, skipped = 0;
+
+    const importAll = db.transaction(() => {
+      for (const row of records) {
+        const title = row['Title'];
+        const author = row['Author'];
+        if (!title) continue;
+        if (existing.get(title, author)) { skipped++; continue; }
+
+        const shelf = row['Exclusive Shelf'] || 'read';
+        const status = statusMap[shelf] || 'want_to_read';
+        const rating = parseInt(row['My Rating'], 10) || null;
+        const comment = (row['My Review'] || '').replace(/<br\s*\/?>/gi, '\n').trim() || null;
+        const dateFinished = row['Date Read'] ? row['Date Read'].replace(/\//g, '-') : null;
+        const dateAdded = row['Date Added'] ? row['Date Added'].replace(/\//g, '-') : new Date().toISOString();
+
+        insert.run(title, author || null, status, rating === 0 ? null : rating, comment, dateFinished, dateAdded);
+        imported++;
+      }
+    });
+
+    importAll();
+
+    // Also save the CSV to the data volume for future reference
+    const dataPath = process.env.DATA_PATH || './data';
+    fs.writeFileSync(path.join(dataPath, 'goodreads_library_export.csv'), req.file.buffer);
+
+    res.json({ imported, skipped });
+  } catch (err) {
+    console.error('[books] CSV import error:', err);
+    res.status(500).json({ error: 'failed to parse CSV' });
+  }
 });
 
 // GET /api/books/:id
