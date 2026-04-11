@@ -85,7 +85,6 @@ export default function Books() {
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [searchText, setSearchText] = useState('');
-  const [importing, setImporting] = useState(false);
   const [showChat, setShowChat] = useState(false);
 
   const loadBooks = useCallback(async () => {
@@ -100,24 +99,6 @@ export default function Books() {
     }
     setLoading(false);
   }, [filter]);
-
-  async function handleImportCsv(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImporting(true);
-    try {
-      const form = new FormData();
-      form.append('file', file);
-      const { data } = await api.post('/books/import-csv', form);
-      alert(`imported ${data.imported} books, skipped ${data.skipped} duplicates`);
-      loadBooks();
-    } catch (err) {
-      alert('import failed — check the CSV format');
-      console.error('[books] import error:', err);
-    }
-    setImporting(false);
-    e.target.value = '';
-  }
 
   useEffect(() => { loadBooks(); }, [loadBooks]);
 
@@ -136,15 +117,9 @@ export default function Books() {
     <div className="page">
       <div className="books-header">
         <h1 className="books-title">books</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <label className="btn btn-ghost" style={{ fontSize: 13, cursor: 'pointer', opacity: importing ? 0.5 : 1 }}>
-            {importing ? 'importing...' : '↑ import csv'}
-            <input type="file" accept=".csv" onChange={handleImportCsv} hidden disabled={importing} />
-          </label>
-          <button className="btn btn-ghost" style={{ fontSize: 13 }} onClick={() => setShowAdd(true)}>
-            + add
-          </button>
-        </div>
+        <button className="btn btn-ghost" style={{ fontSize: 13 }} onClick={() => setShowAdd(true)}>
+          + add
+        </button>
       </div>
 
       <div className="books-filters">
