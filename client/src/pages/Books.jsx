@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../lib/api';
 import ConfirmModal from '../components/ui/ConfirmModal';
 import AddBookModal from '../components/books/AddBookModal';
+import BookChat from '../components/books/BookChat';
 import './Books.css';
 
 const STATUS_FILTERS = [
@@ -85,6 +86,7 @@ export default function Books() {
   const [editTarget, setEditTarget] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [importing, setImporting] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   const loadBooks = useCallback(async () => {
     setLoading(true);
@@ -214,6 +216,14 @@ export default function Books() {
           onClose={() => setEditTarget(null)}
         />
       )}
+
+      {!showChat && (
+        <button className="book-chat-fab" onClick={() => setShowChat(true)}>
+          what should i read?
+        </button>
+      )}
+
+      {showChat && <BookChat onClose={() => setShowChat(false)} onBooksChanged={loadBooks} />}
     </div>
   );
 }

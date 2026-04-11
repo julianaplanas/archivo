@@ -137,4 +137,74 @@ router.post('/book-autocomplete', async (req, res) => {
   }
 });
 
+// POST /api/ai/book-chat — conversational book recommendations based on reading history
+router.post('/book-chat', async (req, res) => {
+  try {
+    const { messages = [] } = req.body;
+    if (!messages.length) return res.status(400).json({ error: 'messages required' });
+
+    // Fetch all read books with ratings and reviews
+    const books = db.prepare(`
+      SELECT title, author, rating, comment, date_finished
+      FROM books WHERE status = 'read' ORDER BY date_finished DESC
+    `).all();
+
+    const readingList = books.map(b => {
+      let line = `- "${b.title}" by ${b.author || 'unknown'}`;
+      if (b.rating) line += ` (${b.rating}/5)`;
+      if (b.comment) line += ` — "${b.comment}"`;
+      return line;
+    }).join('\n');
+
+    const wantToRead = db.prepare(`SELECT title, author FROM books WHERE status = 'want_to_read'`).all();
+    const wtrList = wantToRead.length
+      ? '\n\nBooks already on my want-to-read list:\n' + wantToRead.map(b => `- "${b.title}" by ${b.author || 'unknown'}`).join('\n')
+      : '';
+
+    const systemPrompt = `You are Archivo's book recommender — a well-read, opinionated, casual literary friend. You know the user's full reading history and tastes intimately.
+
+Here are all the books they've read, with their ratings and reviews:
+${readingList}
+${wtrList}
+
+Guidelines:
+- Recommend books based on their demonstrated taste, not generic bestseller lists
+- Reference specific books they've read and why a recommendation connects ("you gave X a 5 and loved the prose — you'd dig Y for similar reasons")
+- Be casual, enthusiastic, opinionated. Have strong takes. It's ok to be wrong.
+- If they ask about a genre/mood/vibe, tailor to that
+- Don't recommend books they've already read or that are on their want-to-read list
+- Keep responses concise — 2-4 recommendations per message unless they ask for more
+- You can discuss books they've read too, not just recommend new ones
+- Write in the same language the user writes to you
+
+IMPORTANT: After your response, add a line with exactly "---RECS---" followed by a JSON array of any books you recommended in this message. Format: [{"title":"...","author":"...","reason":"one-line why"}]. If you didn't recommend any specific books (e.g. you're just chatting about books they read), return an empty array [].`;
+
+    const response = await getClient().chat.completions.create({
+      model: MODEL,
+      max_tokens: 1000,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages,
+      ],
+    });
+
+    const raw = response.choices[0].message.content;
+    let reply = raw;
+    let recommendations = [];
+
+    const recsSplit = raw.split('---RECS---');
+    if (recsSplit.length > 1) {
+      reply = recsSplit[0].trim();
+      try {
+        recommendations = JSON.parse(recsSplit[1].trim().match(/\[[\s\S]*\]/)[0]);
+      } catch {}
+    }
+
+    res.json({ reply, recommendations });
+  } catch (err) {
+    console.error('[ai] book-chat error:', err);
+    res.status(503).json({ error: err.message });
+  }
+});
+
 module.exports = router;
