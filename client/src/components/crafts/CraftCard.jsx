@@ -12,7 +12,7 @@ export default function CraftCard({ craft, onOpen, onComplete, onUncomplete, onE
 
   const imageUrl = craft.images?.[0]?.filepath
     ? `/uploads/${craft.images[0].filepath}`
-    : craft.og_image || null;
+    : null;
 
   const isCompleted = craft.status === 'completed';
   const deadline = craft.deadline_date ? daysUntil(craft.deadline_date) : null;

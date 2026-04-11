@@ -1,6 +1,57 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
 const { db } = require('../db');
+
+const CSV_PATH = process.env.GOODREADS_CSV_PATH || path.join(__dirname, '..', '..', 'goodreads_library_export.csv');
+
+function escapeCsvField(val) {
+  if (val == null) return '';
+  const str = String(val);
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+function appendBookToCsv(book) {
+  try {
+    if (!fs.existsSync(CSV_PATH)) return;
+    const statusMap = { read: 'read', want_to_read: 'to-read', reading: 'currently-reading' };
+    const dateStr = book.date_finished ? book.date_finished.replace(/-/g, '/') : '';
+    const now = new Date().toISOString().slice(0, 10).replace(/-/g, '/');
+    // Goodreads CSV columns: Book Id,Title,Author,Author l-f,Additional Authors,ISBN,ISBN13,My Rating,Publisher,Binding,Number of Pages,Year Published,Original Publication Year,Date Read,Date Added,Bookshelves,Bookshelves with positions,Exclusive Shelf,My Review,Spoiler,Private Notes,Read Count,Owned Copies
+    const row = [
+      '',                                          // Book Id
+      escapeCsvField(book.title),                  // Title
+      escapeCsvField(book.author || ''),           // Author
+      '',                                          // Author l-f
+      '',                                          // Additional Authors
+      '',                                          // ISBN
+      '',                                          // ISBN13
+      book.rating || 0,                            // My Rating
+      '',                                          // Publisher
+      '',                                          // Binding
+      '',                                          // Number of Pages
+      '',                                          // Year Published
+      '',                                          // Original Publication Year
+      dateStr,                                     // Date Read
+      now,                                         // Date Added
+      '',                                          // Bookshelves
+      '',                                          // Bookshelves with positions
+      statusMap[book.status] || 'read',            // Exclusive Shelf
+      escapeCsvField(book.comment || ''),          // My Review
+      '',                                          // Spoiler
+      '',                                          // Private Notes
+      book.status === 'read' ? 1 : 0,             // Read Count
+      0,                                           // Owned Copies
+    ].join(',');
+    fs.appendFileSync(CSV_PATH, row + '\n');
+  } catch (err) {
+    console.error('[books] failed to append to CSV:', err.message);
+  }
+}
 
 // GET /api/books
 router.get('/', (req, res) => {
@@ -20,7 +71,9 @@ router.post('/', (req, res) => {
     INSERT INTO books (title, author, status, rating, comment, date_finished)
     VALUES (?, ?, ?, ?, ?, ?)
   `).run(title, author ?? null, status, rating ?? null, comment ?? null, date_finished ?? null);
-  res.status(201).json(db.prepare('SELECT * FROM books WHERE id = ?').get(result.lastInsertRowid));
+  const book = db.prepare('SELECT * FROM books WHERE id = ?').get(result.lastInsertRowid);
+  appendBookToCsv(book);
+  res.status(201).json(book);
 });
 
 // GET /api/books/:id

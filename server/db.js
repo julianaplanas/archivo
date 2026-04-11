@@ -127,6 +127,7 @@ addColumn('trackers', 'notification_times', 'TEXT');
 addColumn('crafts', 'for_person', 'TEXT');
 addColumn('trackers', 'frequency', 'TEXT NOT NULL DEFAULT "daily_once"');
 addColumn('trackers', 'tracker_subtype', 'TEXT');
+addColumn('trackers', 'notification_timezone', 'TEXT');
 addColumn('tracker_entries', 'entry_metadata', 'TEXT');
 // Round 3 migrations
 addColumn('crafts', 'deadline_date', 'TEXT');

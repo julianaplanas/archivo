@@ -2,25 +2,8 @@ import React, { useState } from 'react';
 import Modal from '../ui/Modal';
 import './CreateTrackerModal.css';
 
-// Convert HH:MM local time to UTC HH:MM for storage
-function localToUTC(hhmm) {
-  if (!hhmm) return hhmm;
-  const [h, m] = hhmm.split(':').map(Number);
-  const offset = new Date().getTimezoneOffset(); // (UTC - local) in minutes
-  let utcMinutes = h * 60 + m + offset;
-  utcMinutes = ((utcMinutes % 1440) + 1440) % 1440;
-  return `${String(Math.floor(utcMinutes / 60)).padStart(2, '0')}:${String(utcMinutes % 60).padStart(2, '0')}`;
-}
-
-// Convert UTC HH:MM from DB to local HH:MM for display
-function utcToLocal(hhmm) {
-  if (!hhmm) return hhmm;
-  const [h, m] = hhmm.split(':').map(Number);
-  const offset = new Date().getTimezoneOffset();
-  let localMinutes = h * 60 + m - offset;
-  localMinutes = ((localMinutes % 1440) + 1440) % 1440;
-  return `${String(Math.floor(localMinutes / 60)).padStart(2, '0')}:${String(localMinutes % 60).padStart(2, '0')}`;
-}
+// Notification times are now stored as local times + IANA timezone.
+// The server converts to UTC at runtime, so DST changes are handled automatically.
 
 const PRESETS = [
   { name: 'Gym', emoji: '💪', type: 'boolean', mode: 'do_it', color: '#f5c400', frequency: 'daily_once', tracker_subtype: 'gym' },
@@ -63,11 +46,10 @@ export default function CreateTrackerModal({ onSave, onClose, existing = null, p
       let timesLocal = ['09:00'];
       if (existing.notification_times) {
         try {
-          const utcArr = JSON.parse(existing.notification_times);
-          timesLocal = utcArr.map(utcToLocal);
+          timesLocal = JSON.parse(existing.notification_times);
         } catch {}
       } else if (existing.notification_time) {
-        timesLocal = [utcToLocal(existing.notification_time)];
+        timesLocal = [existing.notification_time];
       }
       return {
         ...existing,
@@ -98,17 +80,18 @@ export default function CreateTrackerModal({ onSave, onClose, existing = null, p
     setSaving(true);
     setError('');
     try {
-      const utcTimes = form.notifications_enabled
-        ? form.notification_times_local.filter(t => t).map(localToUTC)
+      const localTimes = form.notifications_enabled
+        ? form.notification_times_local.filter(t => t)
         : [];
       await onSave({
         ...form,
         name: form.name.trim(),
         goal_value: form.goal_value !== '' ? Number(form.goal_value) : null,
         goal_unit: form.goal_unit || null,
-        // Store all times as UTC JSON array; keep notification_time as first for compat
-        notification_time: utcTimes[0] ?? null,
-        notification_times: utcTimes.length > 0 ? JSON.stringify(utcTimes) : null,
+        // Store as local times + IANA timezone; server converts to UTC at runtime
+        notification_time: localTimes[0] ?? null,
+        notification_times: localTimes.length > 0 ? JSON.stringify(localTimes) : null,
+        notification_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       onClose();
     } catch {

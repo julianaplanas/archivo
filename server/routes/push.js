@@ -63,17 +63,39 @@ router.post('/test', async (req, res) => {
 
 // Export so cron jobs can use it
 module.exports = router;
+// Convert a local HH:MM + IANA timezone to the current UTC HH:MM
+function localTimeToUTC(hhmm, tz) {
+  if (!hhmm || !tz) return hhmm; // fallback: treat as UTC if no timezone
+  const [h, m] = hhmm.split(':').map(Number);
+  // Build a date for today with the given local time in the given timezone
+  const now = new Date();
+  // Use a reference date (today) to get the correct UTC offset for this timezone right now (handles DST)
+  const refDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h, m, 0));
+  // Get what time it is in the target timezone at our reference UTC time
+  const localStr = refDate.toLocaleString('en-US', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false });
+  // The difference between what we set (h:m UTC) and what the timezone shows tells us the offset
+  const [localH, localM] = localStr.split(':').map(Number);
+  const offsetMinutes = (localH * 60 + localM) - (h * 60 + m);
+  // To convert local→UTC: subtract the offset
+  let utcMinutes = h * 60 + m - offsetMinutes;
+  utcMinutes = ((utcMinutes % 1440) + 1440) % 1440;
+  return `${String(Math.floor(utcMinutes / 60)).padStart(2, '0')}:${String(utcMinutes % 60).padStart(2, '0')}`;
+}
+
 module.exports.sendTrackerReminders = async function (timeStr) {
   if (!initWebPush()) return;
   // timeStr is UTC HH:MM passed from cron job
-  // Check both single notification_time and the notification_times JSON array
+  // notification_times are stored as LOCAL times + timezone; convert to UTC at runtime for DST correctness
   const allTrackers = db.prepare('SELECT * FROM trackers WHERE notifications_enabled = 1').all();
   const trackers = allTrackers.filter(t => {
-    if (t.notification_time === timeStr) return true;
+    const tz = t.notification_timezone;
+    const times = [];
     if (t.notification_times) {
-      try { return JSON.parse(t.notification_times).includes(timeStr); } catch {}
+      try { times.push(...JSON.parse(t.notification_times)); } catch {}
+    } else if (t.notification_time) {
+      times.push(t.notification_time);
     }
-    return false;
+    return times.some(localTime => localTimeToUTC(localTime, tz) === timeStr);
   });
   if (!trackers.length) return;
 
