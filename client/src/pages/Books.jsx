@@ -87,9 +87,14 @@ export default function Books() {
 
   const loadBooks = useCallback(async () => {
     setLoading(true);
-    const q = filter !== 'all' ? `?status=${filter}` : '';
-    const { data } = await api.get(`/books${q}`);
-    setBooks(data);
+    try {
+      const q = filter !== 'all' ? `?status=${filter}` : '';
+      const { data } = await api.get(`/books${q}`);
+      setBooks(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('[books] failed to load:', err);
+      setBooks([]);
+    }
     setLoading(false);
   }, [filter]);
 
